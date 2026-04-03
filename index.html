@@ -273,7 +273,32 @@ async function loadDB() {
     t._routes = buildRoutingTable(size);
     t._size = size;
   });
+  subscribeRealtime()
   renderHome();
+}
+function subscribeRealtime() {
+  supabaseClient
+    .channel('tournaments')
+    .on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'tournaments' },
+      (payload) => {
+        const updated = payload.new;
+        const idx = db.findIndex(t => t.id === updated.id);
+        if (idx !== -1) {
+          db[idx] = updated;
+        } else {
+          db.push(updated);
+        }
+        // Ako je trenutno otvoreni turnir izmenjen, rerenduj
+        if (activeTid === updated.id) {
+          replayAll(getT());
+          renderBracket();
+        } else {
+          renderHome();
+        }
+      }
+    )
+    .subscribe();
 }
 
 // ─── ROUTING TABLES ──────────────────────────────────────────
