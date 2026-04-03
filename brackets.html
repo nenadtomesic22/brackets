@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pikado Turnir – Dupla Eliminacija</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830; --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 50%,rgba(200,255,0,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,77,28,0.03) 0%,transparent 50%);}
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--border);position:relative;z-index:10;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;color:var(--accent);display:flex;align-items:center;gap:10px;}
+  .logo span{color:var(--text);}
+  nav{display:flex;gap:8px;}
+  .nav-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 16px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+  .nav-btn:hover,.nav-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.04);}
+  main{position:relative;z-index:1;}
+  .view{display:none;padding:32px;}
+  .view.active{display:block;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:4px;color:var(--muted);margin-bottom:22px;}
+  .section-title em{color:var(--accent);font-style:normal;}
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px;}
+  .t-card{background:var(--card);border:1px solid var(--border);padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+  .t-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
+  .t-card:hover{border-color:var(--accent);}
+  .t-card:hover::before{transform:scaleX(1);}
+  .t-card-name{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;}
+  .t-card-meta{color:var(--muted);font-size:0.7rem;margin-top:5px;}
+  .t-card-champ{color:var(--gold);font-size:0.72rem;margin-top:5px;}
+  .badge{display:inline-block;margin-top:10px;padding:2px 9px;font-size:0.62rem;letter-spacing:1px;text-transform:uppercase;border:1px solid;}
+  .b-active{border-color:var(--accent);color:var(--accent);}
+  .b-done{border-color:rgb(197, 52, 52);color:rgb(197, 52, 52);}
+  .add-btn{border:2px dashed var(--border);background:transparent;color:var(--muted);padding:18px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.78rem;letter-spacing:1px;width:100%;text-align:center;transition:all 0.2s;text-transform:uppercase;}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.87);z-index:100;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border);padding:32px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;color:var(--accent);margin-bottom:22px;}
+  .close-x{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
+  .close-x:hover{color:var(--accent2);}
+  .fg{margin-bottom:16px;}
+  label{display:block;font-size:0.68rem;letter-spacing:2px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;}
+  input[type=text],input[type=date]{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:'DM Mono',monospace;font-size:0.83rem;outline:none;transition:border-color 0.2s;}
+  input:focus{border-color:var(--accent);}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+  .tag{background:var(--surface);border:1px solid var(--border);padding:3px 9px;font-size:0.72rem;display:flex;align-items:center;gap:5px;}
+  .tag button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:0.85rem;}
+  .row{display:flex;gap:8px;}
+  .btn{background:var(--accent);color:var(--bg);border:none;padding:10px 20px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+  .btn:hover{background:#d4ff33;}
+  .btn-o{background:transparent;color:var(--text);border:1px solid var(--border);padding:10px 20px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+  .btn-o:hover{border-color:var(--accent);color:var(--accent);}
+  .modal-actions{display:flex;gap:8px;margin-top:22px;}
+  #bv{padding:0;}
+  .bv-header{display:flex;align-items:center;gap:14px;padding:18px 32px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 13px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:1px;transition:all 0.2s;}
+  .back-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .bv-title{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;}
+  .tabs{display:flex;margin-left:auto;}
+  .tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 18px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+  .tab.active{background:var(--card);color:var(--accent);border-color:var(--accent);}
+  .bv-actions{display:flex;gap:8px;padding:14px 32px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center;}
+  .bv-actions span{color:var(--muted);font-size:0.68rem;}
+  .tool-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 14px;cursor:pointer;font-size:0.7rem;letter-spacing:1px;font-family:'DM Mono',monospace;text-transform:uppercase;transition:all 0.2s;}
+  .tool-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .tool-btn.danger{border-color:rgba(255,77,28,0.4);color:var(--accent2);}
+  .tool-btn.danger:hover{border-color:var(--accent2);}
+  .bracket-scroll{overflow-x:auto;padding:24px 32px;}
+  .blabel{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;}
+  .blabel.lb{color:var(--accent2);}
+  .blabel.gfl{color:var(--gold);}
+  .rounds{display:flex;align-items:flex-start;min-width:max-content;}
+  .round-col{display:flex;flex-direction:column;}
+  .round-title{font-size:0.62rem;letter-spacing:2px;color:var(--muted);text-align:center;padding:0 8px 10px;text-transform:uppercase;}
+  .match-card{width:190px;border:1px solid var(--border);background:var(--card);cursor:pointer;transition:border-color 0.15s;position:relative;margin:4px 0;flex-shrink:0;}
+  .match-card:hover:not(.noclk){border-color:var(--accent);}
+  .match-card.noclk{cursor:default;}
+  .match-card.gfc{border-color:rgba(255,215,0,0.35);}
+  .match-card.gfc:hover{border-color:var(--gold);}
+  .mp{display:flex;align-items:center;padding:6px 9px;font-size:0.76rem;border-bottom:1px solid var(--border);min-height:30px;}
+  .mp:last-child{border-bottom:none;}
+  .mp.win{background:rgba(200,255,0,0.07);color:var(--accent);}
+  .mp.lose{color:var(--muted);text-decoration:line-through;}
+  .mp.tbd{color:var(--muted);font-style:italic;}
+  .mp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mp-score{font-family:'Bebas Neue',sans-serif;font-size:1rem;min-width:20px;text-align:right;color:var(--muted);}
+  .mp.win .mp-score{color:var(--accent);}
+  .mid{position:absolute;top:-7px;left:7px;font-size:0.58rem;color:var(--muted);background:var(--card);padding:0 3px;letter-spacing:1px;}
+  .gf-section{padding:24px 32px 32px;}
+  .gf-note{font-size:0.7rem;color:var(--muted);margin-top:10px;line-height:1.8;}
+  .champ-box{margin-top:20px;padding:18px 26px;border:1px solid var(--gold);background:rgba(255,215,0,0.04);display:inline-block;}
+  .champ-lbl{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:4px;color:var(--gold);}
+  .champ-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;}
+  .score-modal{width:330px;border-color:rgba(200,255,0,0.5);}
+  .sp-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .sp{flex:1;text-align:center;}
+  .sp-name{font-size:0.68rem;color:var(--muted);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .s-inp{width:62px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px;outline:none;}
+  .s-inp:focus{border-color:var(--accent);}
+  .vs{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--muted);}
+  .s-info{font-size:0.67rem;color:var(--muted);margin-bottom:14px;line-height:1.7;}
+  .standings-wrap{padding:32px;}
+  table.st{width:100%;border-collapse:collapse;}
+  .st th{text-align:left;padding:9px 13px;font-size:0.63rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);}
+  .st td{padding:9px 13px;font-size:0.8rem;border-bottom:1px solid rgba(46,56,48,0.4);}
+  .st tr:hover td{background:rgba(200,255,0,0.025);}
+  .rn{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:var(--muted);}
+  .rg{color:var(--gold);} .rs{color:#c0c0c0;} .rb{color:#cd7f32;}
+  @media print{
+    body{background:white;color:black;}
+    header,.bv-actions,.back-btn,.tabs{display:none!important;}
+    .match-card{border-color:#ccc;background:white;}
+    .mp.win{background:#f0f8e8;color:#2a6000;}
+  }
+
+  .round-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.round-col .match-card {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+<header>
+  <div class="logo">🎯 TARGET <span>SOMBOR</span></div>
+  <nav>
+    <button class="nav-btn active" id="navHome" onclick="goHome()">TURNIRI</button>
+    <button class="nav-btn" id="navBracket" style="display:none" onclick="showView('bv')">REPASAŽ</button>
+  </nav>
+</header>
+<main>
+  <div class="view active" id="homeView">
+    <div style="max-width:900px;margin:0 auto">
+      <div class="section-title">DOSADAŠNJI <em>TURNIRI</em></div>
+      <div class="tgrid" id="tGrid"></div>
+      <button class="add-btn" onclick="openNewModal()">+ NOVI TURNIR</button>
+    </div>
+  </div>
+  <div class="view" id="bv">
+    <div class="bv-header">
+      <button class="back-btn" onclick="goHome()">← NAZAD</button>
+      <div class="bv-title" id="bvTitle"></div>
+      <div class="tabs" style="margin-left:auto">
+        <button class="tab active" onclick="switchTab('bracket')">REPASAŽ</button>
+        <button class="tab" onclick="switchTab('standings')">TABELA</button>
+      </div>
+    </div>
+    <div class="bv-actions">
+      <span>OPCIJE:</span>
+      <button class="tool-btn" onclick="window.print()">🖨 ŠTAMPAJ</button>
+      <button class="tool-btn" onclick="doExport()">⬇ EXPORT CSV</button>
+      <button class="tool-btn danger" onclick="doReset()">↺ RESETUJ</button>
+    </div>
+    <div id="bracketTab">
+      <div class="bracket-scroll"><div class="blabel">GLAVNI ŽREB</div><div class="rounds" id="wRounds"></div></div>
+      <div class="bracket-scroll"><div class="blabel lb">REPASAŽ</div><div class="rounds" id="lRounds"></div></div>
+      <div class="gf-section"><div class="blabel gfl">🏆 FINALE</div><div id="gfArea"></div></div>
+    </div>
+    <div id="standingsTab" style="display:none">
+      <div class="standings-wrap">
+        <div class="section-title">TABELA <em>IGRAČA</em></div>
+        <table class="st" id="stTable"></table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="newModal">
+  <div class="modal">
+    <button class="close-x" onclick="closeOv('newModal')">✕</button>
+    <h2>NOVI TURNIR</h2>
+    <div class="fg"><label>Naziv turnira</label><input type="text" id="inName" placeholder="npr. Pikado liga Sombor 2026"></div>
+    <div class="fg"><label>Datum</label><input type="date" id="inDate"></div>
+    <div class="fg">
+      <label>Igrači</label>
+      <div class="tags" id="pTags"></div>
+      <div class="row">
+        <input type="text" id="pInput" placeholder="Ime igrača" onkeydown="if(event.key==='Enter')addP()">
+        <button class="btn" onclick="addP()">DODAJ</button>
+      </div>
+      <div style="font-size:0.63rem;color:var(--muted);margin-top:5px">Min 4 igrača. Žreb = redosled unosa.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="createTournament()">KREIRAJ</button>
+      <button class="btn-o" onclick="closeOv('newModal')">OTKAŽI</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="scoreModal">
+  <div class="modal score-modal">
+    <button class="close-x" onclick="closeOv('scoreModal')">✕</button>
+    <h2>REZULTAT</h2>
+    <div class="sp-row">
+      <div class="sp"><div class="sp-name" id="sp1n"></div><input type="number" class="s-inp" id="sp1" min="0" max="99" value="0"></div>
+      <div class="vs">VS</div>
+      <div class="sp"><div class="sp-name" id="sp2n"></div><input type="number" class="s-inp" id="sp2" min="0" max="99" value="0"></div>
+    </div>
+    <div class="s-info" id="sInfo"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="submitScore()">POTVRDI</button>
+      <button class="btn-o" onclick="closeOv('scoreModal')">OTKAŽI</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
+
+if (!window._supabaseClient) {
+  window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+const supabaseClient = window._supabaseClient;
+// ═══════════════════════════════════════════════════════════════
+// DOUBLE ELIMINATION — HARD-MAPPED ROUTING
+//
+// The entire bracket is pre-wired at generation time using
+// explicit routing tables for each bracket size (4,8,16,32).
+//
+// Each match stores:
+//   nextWin:  { bracket, round, match, slot }  — where winner goes
+//   nextLose: { bracket, round, match, slot }  — where loser goes
+//
+// "round" and "match" are 0-based array indices.
+// slot 1 = p1, slot 2 = p2
+//
+// On every score submit → replayAll():
+//   1. collect all user results (non-bye played matches)
+//   2. rebuild blank bracket from seed
+//   3. replay each result in order → propagate winner+loser
+//
+// No dynamic slot computation. No auto-advance. Pure replay.
+// ═══════════════════════════════════════════════════════════════
+
+// ─── STATE ───────────────────────────────────────────────────
+const BYE = "__BYE__";
+let db = [];
+let activeTid = null;
+let pendingId = null;
+let newPs = [];
+
+const save = () => localStorage.setItem('pikado_v4', JSON.stringify(db));
+const getT = () => db.find(t => t.id === activeTid);
+
+// ─── MATCH FACTORY ───────────────────────────────────────────
+function mkM(id, p1=null, p2=null) {
+  return { id, p1, p2, s1:null, s2:null, winner:null, loser:null, done:false,
+           nextWin:null, nextLose:null };
+}
+
+async function loadDB() {
+  const { data, error } = await supabaseClient
+    .from('tournaments')
+    .select('*');
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  db = data;
+  db.forEach(t => {
+    const size = nextPow2(t.seed.length);
+    t._routes = buildRoutingTable(size);
+    t._size = size;
+  });
+  renderHome();
+}
+
+// ─── ROUTING TABLES ──────────────────────────────────────────
+// For each bracket size, define exact routing for every match.
+// Format: matchId → { win: {b,r,m,s}, lose: {b,r,m,s} }
+// b = bracket: 'W','L','GF','GFR'
+// r = round index (0-based), m = match index (0-based), s = slot (1 or 2)
+
+function buildRoutingTable(size) {
+  // size = power of 2 (4, 8, 16, 32)
+  const routes = {};
+
+  if (size === 4) {
+    // W bracket: 2 rounds
+    // WR0: W_R1_M0, W_R1_M1
+    // WR1: W_R2_M0 (final)
+    // L bracket: 1 round → LR0: L_R1_M0
+    // Grand Final: GF
+    routes['W_R1_M0'] = { win:{b:'W',r:1,m:0,s:1}, lose:{b:'L',r:0,m:0,s:1} };
+    routes['W_R1_M1'] = { win:{b:'W',r:1,m:0,s:2}, lose:{b:'L',r:0,m:0,s:2} };
+    routes['W_R2_M0'] = { win:{b:'GF',s:1},         lose:{b:'L',r:1,m:0,s:2} };
+    routes['L_R1_M0'] = { win:{b:'L',r:1,m:0,s:1},          lose:null };
+    routes['L_R2_M0'] = { win:{b:'GF',s:2}, lose:null };
+    routes['GF']      = { win:{b:'GFR',s:1}, lose:{b:'GFR',s:2} };
+    routes['GFR']     = { win:null, lose:null };
+  }
+
+  else if (size === 8) {
+    // W bracket: 3 rounds
+    // WR0(4 matches) → WR1(2 matches) → WR2(1 match=W final)
+    // L bracket:
+    //   LR0: 2 matches (losers WR0 face each other: W0vW1, W2vW3)
+    //   LR1: 2 matches (LR0 winners vs losers WR1)
+    //   LR2: 1 match   (LR1 winners, reduce)
+    // GF, GFR
+
+    // WR0 → WR1 winners, LR0 losers
+    routes['W_R1_M0'] = { win:{b:'W',r:1,m:0,s:1}, lose:{b:'L',r:0,m:0,s:1} };
+    routes['W_R1_M1'] = { win:{b:'W',r:1,m:0,s:2}, lose:{b:'L',r:0,m:0,s:2} };
+    routes['W_R1_M2'] = { win:{b:'W',r:1,m:1,s:1}, lose:{b:'L',r:0,m:1,s:1} };
+    routes['W_R1_M3'] = { win:{b:'W',r:1,m:1,s:2}, lose:{b:'L',r:0,m:1,s:2} };
+
+    // WR1 → WR2 winners, LR1 losers (feed round: WR1 loser enters LR1 as p2)
+    routes['W_R2_M0'] = { win:{b:'W',r:2,m:0,s:1}, lose:{b:'L',r:1,m:0,s:2} };
+    routes['W_R2_M1'] = { win:{b:'W',r:2,m:0,s:2}, lose:{b:'L',r:1,m:1,s:2} };
+
+    // WR2 (W final) → GF p1, loser → GFR slot1 (bracket reset)
+    routes['W_R3_M0'] = { win:{b:'GF',s:1}, lose:{b:'L',r:3,m:0,s:2} };
+
+    // LR0 → LR1 as p1 (the "returning" L survivor)
+    routes['L_R1_M0'] = { win:{b:'L',r:1,m:0,s:1}, lose:null };
+    routes['L_R1_M1'] = { win:{b:'L',r:1,m:1,s:1}, lose:null };
+
+    // LR1 → LR2
+    routes['L_R2_M0'] = { win:{b:'L',r:2,m:0,s:1}, lose:null };
+    routes['L_R2_M1'] = { win:{b:'L',r:2,m:0,s:2}, lose:null };
+
+    // LR2 (L final) → GF p2
+    routes['L_R3_M0'] = { win:{b:'L',r:3,m:0,s:1}, lose:null };
+
+    routes['L_R4_M0'] = { win:{b:'GF',s:2}, lose:null };
+
+    routes['GF']  = { win:{b:'GFR',s:1}, lose:{b:'GFR',s:2} };
+    routes['GFR'] = { win:null, lose:null };
+  }
+
+  else if (size === 16) {
+    // W: WR0(8) → WR1(4) → WR2(2) → WR3(1=W final)
+    // L: LR0(4) LR1(4) LR2(2) LR3(2) LR4(1) LR5(1) LR6(1)... see below
+
+    // WR0: 8 matches → winners to WR1, losers to LR0 (paired)
+    for (let i = 0; i < 8; i++) {
+      routes[`W_R1_M${i}`] = {
+        win:  { b:'W', r:1, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:0, m:Math.floor(i/2), s:(i%2===0?1:2) }
+      };
+    }
+    // WR1: 4 matches → winners to WR2, losers to LR1 (feed: slot 2)
+    for (let i = 0; i < 4; i++) {
+      routes[`W_R2_M${i}`] = {
+        win:  { b:'W', r:2, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:1, m:i, s:2 }
+      };
+    }
+    // WR2: 2 matches → winners to WR3, losers to LR3 (feed: slot 2)
+    for (let i = 0; i < 2; i++) {
+      routes[`W_R3_M${i}`] = {
+        win:  { b:'W', r:3, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:3, m:i, s:2 }
+      };
+    }
+    // WR3 (W final): winner → GF p1
+    routes['W_R4_M0'] = { win:{b:'GF',s:1}, lose:{b:'L',r:5,m:0,s:2} };
+
+    // LR0: 4 matches (WR0 losers), winners → LR1 slot 1
+    for (let i = 0; i < 4; i++) {
+      routes[`L_R1_M${i}`] = { win:{b:'L',r:1,m:i,s:1}, lose:null };
+    }
+    // LR1: 4 matches (LR0 winner + WR1 loser), winners → LR2
+    for (let i = 0; i < 4; i++) {
+      routes[`L_R2_M${i}`] = { win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)}, lose:null };
+    }
+    // LR2: 2 matches → LR3 slot 1
+    for (let i = 0; i < 2; i++) {
+      routes[`L_R3_M${i}`] = { win:{b:'L',r:3,m:i,s:1}, lose:null };
+    }
+    // LR3: 2 matches (LR2 winner + WR2 loser) → LR4
+    for (let i = 0; i < 2; i++) {
+      routes[`L_R4_M${i}`] = { win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)}, lose:null };
+    }
+    // LR4: 1 match → LR5 slot 1
+    routes['L_R5_M0'] = { win:{b:'L',r:5,m:0,s:1}, lose:null };
+    // LR5: 1 match (LR4 winner + WR3 loser) → LR6
+    routes['L_R6_M0'] = { win:{b:'L',r:6,m:0,s:1}, lose:null };  // reduce — actually this is L final
+    // Wait — for 16p we need 6 L rounds total. Let me lay out correctly:
+    // LR0(4) → LR1(4,feed WR1) → LR2(2,reduce) → LR3(2,feed WR2) → LR4(1,reduce) → LR5(1,feed WR3) = L final
+    // Overwrite LR5 as L final:
+    routes['L_R5_M0'] = { win:{b:'L',r:5,m:0,s:1}, lose:null }; // LR4 winner → LR5 slot 1
+    // LR5 is feed round for WR3 losers (slot 2 already set above via W_R4)... 
+    // Actually WR3 = W_R4_M0 which goes to GF. WR2 losers go to LR3.
+    // Let me recount for 16p:
+    // W rounds: WR0(8m) WR1(4m) WR2(2m) WR3(1m=Wfinal) → 4 W rounds
+    // L rounds: 2*(4-1) = 6 L rounds
+    //   LR0: 4m (WR0 losers paired) — pure reduce
+    //   LR1: 4m (LR0 win + WR1 lose) — feed
+    //   LR2: 2m (LR1 win) — reduce
+    //   LR3: 2m (LR2 win + WR2 lose) — feed
+    //   LR4: 1m (LR3 win) — reduce
+    //   LR5: 1m (LR4 win + WR3 lose) — feed = L final
+    // So LR5 is the L final → GF p2
+    routes['L_R6_M0'] = { win:{b:'GF',s:2}, lose:null };
+    // And LR4 winner → LR5 slot 1, WR3 loser → LR5 slot 2
+    routes['L_R4_M0'] = { win:{b:'L',r:5,m:0,s:1}, lose:null };
+    // WR3 = W_R3_M0 and W_R3_M1, their losers go to LR3
+    // (already set above)
+    // LR3 winners → LR4
+    for (let i = 0; i < 2; i++) {
+      routes[`L_R4_M${i}`] = { win:{b:'L',r:4,m:0,s:(i===0?1:2)}, lose:null };
+    }
+    // LR4 (1 match) winner → LR5 slot 1
+    routes['L_R4_M0'] = { win:{b:'L',r:4,m:0,s:1}, lose:null };
+
+    routes['GF']  = { win:{b:'GFR',s:1}, lose:{b:'GFR',s:2} };
+    routes['GFR'] = { win:null, lose:null };
+  }
+
+  else if (size === 32) {
+    // W: WR0(16) WR1(8) WR2(4) WR3(2) WR4(1=Wfinal) → 5 W rounds
+    // L: 2*(5-1)=8 L rounds
+    //   LR0(8,reduce) LR1(8,feed WR1) LR2(4,reduce) LR3(4,feed WR2)
+    //   LR4(2,reduce) LR5(2,feed WR3) LR6(1,reduce) LR7(1,feed WR4)=Lfinal
+
+    for (let i = 0; i < 16; i++) {
+      routes[`W_R1_M${i}`] = {
+        win:  { b:'W', r:1, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:0, m:Math.floor(i/2), s:(i%2===0?1:2) }
+      };
+    }
+    for (let i = 0; i < 8; i++) {
+      routes[`W_R2_M${i}`] = {
+        win:  { b:'W', r:2, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:1, m:i, s:2 }
+      };
+    }
+    for (let i = 0; i < 4; i++) {
+      routes[`W_R3_M${i}`] = {
+        win:  { b:'W', r:3, m:Math.floor(i/2), s:(i%2===0?1:2) },
+        lose: { b:'L', r:3, m:i, s:2 }
+      };
+    }
+    for (let i = 0; i < 2; i++) {
+      routes[`W_R4_M${i}`] = {
+        win:  { b:'W', r:4, m:0, s:(i===0?1:2) },
+        lose: { b:'L', r:5, m:i, s:2 }
+      };
+    }
+    routes['W_R5_M0'] = { win:{b:'GF',s:1}, lose:{b:'L',r:7,m:0,s:2} };
+
+    for (let i = 0; i < 8; i++) {
+      routes[`L_R1_M${i}`] = { win:{b:'L',r:1,m:i,s:1}, lose:null };
+    }
+    for (let i = 0; i < 8; i++) {
+      routes[`L_R2_M${i}`] = { win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)}, lose:null };
+    }
+    for (let i = 0; i < 4; i++) {
+      routes[`L_R3_M${i}`] = { win:{b:'L',r:3,m:i,s:1}, lose:null };
+    }
+    for (let i = 0; i < 4; i++) {
+      routes[`L_R4_M${i}`] = { win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)}, lose:null };
+    }
+    for (let i = 0; i < 2; i++) {
+      routes[`L_R5_M${i}`] = { win:{b:'L',r:5,m:i,s:1}, lose:null };
+    }
+    for (let i = 0; i < 2; i++) {
+      routes[`L_R6_M${i}`] = { win:{b:'L',r:6,m:0,s:(i===0?1:2)}, lose:null };
+    }
+    routes['L_R7_M0'] = { win:{b:'L',r:7,m:0,s:1}, lose:null };
+    routes['L_R8_M0'] = { win:{b:'GF',s:2}, lose:null };
+
+    routes['GF']  = { win:{b:'GFR',s:1}, lose:{b:'GFR',s:2} };
+    routes['GFR'] = { win:null, lose:null };
+  }
+
+  return routes;
+}
+
+// ─── BRACKET GENERATION ──────────────────────────────────────
+function genBracket(t) {
+  const players = [...t.seed];
+  const size = nextPow2(players.length);
+
+  const routes = buildRoutingTable(size);
+  t._routes = routes;
+  t._size = size;
+
+  // Winners round 1
+  t.wB = [];
+  let r0 = [];
+  for (let i = 0; i < size; i += 2) {
+    const id = `W_R1_M${i/2}`;
+    const m = mkM(id, players[i], players[i+1]);
+    applyRoutes(m, routes);
+    r0.push(m);
+  }
+  t.wB.push(r0);
+
+  // Remaining W rounds (empty slots)
+  let cur = r0.length;
+  let wr = 2;
+  while (cur > 1) {
+    cur = Math.ceil(cur / 2);
+    const round = [];
+    for (let i = 0; i < cur; i++) {
+      const id = `W_R${wr}_M${i}`;
+      const m = mkM(id);
+      applyRoutes(m, routes);
+      round.push(m);
+    }
+    t.wB.push(round);
+    wr++;
+  }
+
+  // L bracket structure
+  t.lB = buildLStructure(size, routes);
+
+  // Grand Final + Reset
+  t.gf  = mkM('GF');  applyRoutes(t.gf, routes);
+  t.gfr = mkM('GFR'); applyRoutes(t.gfr, routes);
+}
+
+function applyRoutes(m, routes) {
+  const r = routes[m.id];
+  if (!r) return;
+  m.nextWin  = r.win  || null;
+  m.nextLose = r.lose || null;
+}
+
+function buildLStructure(size, routes) {
+  // Count L rounds from routes
+  const lRounds = [];
+  let r = 0;
+  while (true) {
+    const ids = Object.keys(routes).filter(k => k.startsWith(`L_R${r+1}_`));
+    if (ids.length === 0) break;
+    const round = ids.sort((a,b) => {
+      const ma = parseInt(a.split('_M')[1]);
+      const mb = parseInt(b.split('_M')[1]);
+      return ma - mb;
+    }).map(id => { const m = mkM(id); applyRoutes(m, routes); return m; });
+    lRounds.push(round);
+    r++;
+  }
+  return lRounds;
+}
+
+// ─── REPLAY ENGINE ────────────────────────────────────────────
+// This is the heart of correctness.
+// Every time a score is submitted, we:
+//   1. Save the result onto the match in current state
+//   2. Collect ALL manually-entered results (done=true, not a pure bye)
+//   3. Rebuild the bracket from scratch
+//   4. Replay each result → propagate winner and loser
+// This guarantees bracket is always consistent regardless of order.
+
+function replayAll(t) {
+  // Collect user results before rebuild
+  const results = collectResults(t);
+
+  // Rebuild blank bracket (preserves seed)
+  genBracket(t);
+  
+
+  // Replay in order
+  for (const res of results) {
+    const m = findM(t, res.id);
+    if (!m) continue;
+
+    m.s1 = res.s1; 
+    m.s2 = res.s2;
+
+  // 🟡 BYE handling (OVO DODAJEŠ)
+    if (m.p1 === BYE || m.p2 === BYE) {
+      m.winner = m.p1 === BYE ? m.p2 : m.p1;
+      m.loser = BYE;
+      m.done = true;
+    } else {
+      m.done = true;
+      m.winner = res.s1 > res.s2 ? (m.p1 || res.p1) : (m.p2 || res.p2);
+      m.loser  = res.s1 > res.s2 ? (m.p2 || res.p2) : (m.p1 || res.p1);
+
+      if (!m.winner) m.winner = res.winner;
+      if (!m.loser)  m.loser  = res.loser;
+    }
+
+    propagate(t, m);
+  }
+  resolveByesReplay(t);
+}
+
+function resolveByesReplay(t) {
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const m of allMatches(t)) {
+      if (m.done) continue;
+
+      if (m.p1 === BYE && m.p2 === BYE) {
+        m.done = true;
+        continue;
+      }
+
+      if (m.p1 === BYE || m.p2 === BYE) {
+        m.winner = m.p1 === BYE ? m.p2 : m.p1;
+        m.loser = null;
+        m.done = true;
+
+        propagate(t, m);
+        changed = true; // 🔥 KLJUČNO — omogućava lančanu propagaciju
+      } else if (m.p1 === BYE && m.p2 === BYE) {
+  m.winner = BYE;
+  m.loser = BYE;
+  m.done = true;
+}
+    }
+  }
+}
+
+function collectResults(t) {
+  return allMatches(t)
+    .filter(m => m.done &&
+  (m.winner || m.p1 === BYE || m.p2 === BYE))
+    .map(m => ({ id:m.id, s1:m.s1, s2:m.s2, winner:m.winner, loser:m.loser, p1:m.p1, p2:m.p2 }));
+}
+
+// ─── PROPAGATION ─────────────────────────────────────────────
+function propagate(t, m) {
+  if (m.winner) placeInSlot(t, m.nextWin,  m.winner);
+  if (m.loser)  placeInSlot(t, m.nextLose, m.loser);
+}
+
+function resolveByes(t) {
+  allMatches(t).forEach(m => {
+    if (m.done) return;
+
+    // već ima nekog u sledećoj rundi → preskoči
+    const nextW = getMatchByRef(t, m.nextWin);
+    if (nextW) {
+      if ((m.nextWin?.s === 1 && nextW.p1) ||
+          (m.nextWin?.s === 2 && nextW.p2)) {
+        return;
+      }
+    }
+
+    if (m.p1 && m.p2 === BYE) {
+      m.winner = m.p1;
+      m.loser = null;
+      m.done = true;
+      propagate(t, m);
+    }
+
+    else if (m.p2 && m.p1 === BYE) {
+      m.winner = m.p2;
+      m.loser = null;
+      m.done = true;
+      propagate(t, m);
+    }
+
+    else if (m.p1 === BYE && m.p2 === BYE) {
+      m.winner = null;
+      m.loser = null;
+      m.done = true;
+    }
+  });
+}
+
+function placeInSlot(t, ref, player) {
+  if (!ref || !player) return;
+  const m = getMatchByRef(t, ref);
+  if (!m) return;
+  if (ref.s === 1) m.p1 = player;
+  else             m.p2 = player;
+}
+
+function getMatchByRef(t, ref) {
+  if (!ref) return null;
+  if (ref.b === 'GF')  return t.gf;
+  if (ref.b === 'GFR') return t.gfr;
+  if (ref.b === 'W')   return t.wB[ref.r]?.[ref.m] || null;
+  if (ref.b === 'L')   return t.lB[ref.r]?.[ref.m] || null;
+  return null;
+}
+
+// ─── SCORE SUBMIT ────────────────────────────────────────────
+function openScoreModal(id) {
+  
+  const t = getT();
+  const m = findM(t, id);
+  if (!m) return;
+  if (m.p1 === BYE || m.p2 === BYE) {
+    alert("Ovo je BYE meč — nema potrebe za unosom rezultata.");
+    return;
+  }
+  pendingId = id;
+  document.getElementById('sp1n').textContent = m.p1 || 'TBD';
+  document.getElementById('sp2n').textContent = m.p2 || 'TBD';
+  document.getElementById('sp1').value = m.s1 ?? 0;
+  document.getElementById('sp2').value = m.s2 ?? 0;
+  document.getElementById('sInfo').innerHTML =
+    `Meč: <strong>${id}</strong>` +
+    (m.done ? '<br><span style="color:var(--accent2)">⚠ Već odigran — izmena rekalkuliše bracket</span>' : '');
+  openOv('scoreModal');
+}
+
+function submitScore() {
+  const t = getT();
+  const m = findM(t, pendingId);
+  if (!m) return;
+  const s1 = parseInt(document.getElementById('sp1').value) || 0;
+  const s2 = parseInt(document.getElementById('sp2').value) || 0;
+  if (s1 === s2) { alert('Rezultat ne može biti nerešen!'); return; }
+
+  // Store result on current match object (will be picked up by collectResults)
+  m.s1 = s1; m.s2 = s2; m.done = true;
+  m.winner = s1 > s2 ? (m.p1 || 'TBD') : (m.p2 || 'TBD');
+  m.loser  = s1 > s2 ? (m.p2 || 'TBD') : (m.p1 || 'TBD');
+
+  replayAll(t);
+  updateTournament(t);
+  closeOv('scoreModal');
+  renderBracket();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
+function renderBracket() {
+  const t = getT();
+  if (!t) return;
+  replayAll(t); renderW(t); renderL(t); renderGF(t); renderStandings(t);
+}
+
+const WNAMES = ['1. KOLO','2. KOLO','ČETVRTFINALE','POLUFINALE','FINALE W','W FINALE'];
+
+function renderW(t) {
+  const cont = document.getElementById('wRounds'); cont.innerHTML = '';
+  t.wB.forEach((round, ri) => {
+    const rd = document.createElement('div'); rd.className = 'round-col';
+    rd.innerHTML = `<div class="round-title">${WNAMES[ri]||'KOLO '+(ri+1)}</div>`;
+    const matchH = 62;
+const gap = 33;
+const unit = matchH + gap // 95
+let spacing = unit;
+for (let i = 1; i < ri; i++) {
+  spacing = spacing * 2 + unit;
+}
+const topPad = ri === 0 ? 0 : spacing / 2;
+    round.forEach((m, mi) => {
+  const el = mEl(m);
+  if (ri === 0) {
+    el.style.marginBottom = `${gap}px`;
+  } else {
+    el.style.marginBottom = `${gap}px`;
+    el.style.marginTop = mi === 0 ? `${topPad}px` : `${spacing}px`;
+  }
+  rd.appendChild(el);
+});
+    cont.appendChild(rd);
+    if (ri < t.wB.length-1) cont.appendChild(gapEl());
+  });
+}
+
+function renderL(t) {
+  const cont = document.getElementById('lRounds'); cont.innerHTML = '';
+  t.lB.forEach((round, ri) => {
+    const rd = document.createElement('div'); rd.className = 'round-col';
+    rd.innerHTML = `<div class="round-title" style="color:var(--accent2)">L-${ri+1}</div>`;
+    const matchH = 62;
+    const gap = 33;
+    const unit = matchH + gap;
+
+    // Računamo koliko reduce rundi je prošlo DO ove runde (ne uključujući)
+    const reducesDone = Math.floor(ri / 2);
+
+    let spacing = unit;
+    for (let i = 1; i < reducesDone; i++) {
+      spacing = spacing * 2 + unit;
+    }
+    if (reducesDone === 0) spacing = unit;
+    const topPad = reducesDone === 0 ? 0 : spacing / 2;
+    round.forEach((m, mi) => {
+      const el = mEl(m);
+      el.style.marginBottom = `${gap}px`;
+      if (ri > 0 && reducesDone > 0) {
+        el.style.marginTop = mi === 0 ? `${topPad}px` : `${spacing}px`;
+      }
+      rd.appendChild(el);
+    });
+    cont.appendChild(rd);
+    if (ri < t.lB.length-1) cont.appendChild(gapEl());
+  });
+}
+
+function renderGF(t) {
+  const area = document.getElementById('gfArea'); area.innerHTML = '';
+  area.appendChild(mEl(t.gf, true));
+
+  if (t.gf.done) {
+    if (t.gf.winner === t.gf.p1) {
+      area.appendChild(champEl(t.gf.winner));
+    } else {
+      const note = document.createElement('div'); note.className = 'gf-note';
+      note.innerHTML = '⚡ <strong style="color:var(--accent2)">EGAL</strong> — Repasaž finalista mora pobediti dva puta.';
+      area.appendChild(note);
+      const rl = document.createElement('div');
+      rl.style.cssText = 'font-family:Bebas Neue,sans-serif;font-size:0.85rem;letter-spacing:3px;color:var(--accent2);margin:14px 0 6px';
+      rl.textContent = 'ODLUČUJUĆI SET'; area.appendChild(rl);
+      area.appendChild(mEl(t.gfr, true));
+      if (t.gfr.done) area.appendChild(champEl(t.gfr.winner));
+    }
+  }
+}
+
+function mEl(m, isGF=false) {
+  const hasAny = m.p1 || m.p2;
+  const d = document.createElement('div');
+  d.className = 'match-card' + (hasAny ? '' : ' noclk') + (isGF ? ' gfc' : '');
+  if (hasAny) d.onclick = () => openScoreModal(m.id);
+  d.innerHTML = `<div class="mid">${m.id}</div>${pRow(m,1)}${pRow(m,2)}`;
+  return d;
+}
+
+function pRow(m, n) {
+  const raw = m[`p${n}`];
+  const name = raw === BYE ? "BYE" : raw;
+  const score = m[`s${n}`];
+  const isW = m.done && m.winner === name;
+  const isL = m.done && m.loser === name;
+  const cls = !name ? 'tbd' : isW ? 'win' : isL ? 'lose' : '';
+  return `<div class="mp ${cls}"><span class="mp-name">${name||'TBD'}</span><span class="mp-score">${m.done&&score!==null?score:''}</span></div>`;
+}
+
+function gapEl() { const d=document.createElement('div'); d.style.cssText='width:16px;flex-shrink:0'; return d; }
+function champEl(name) {
+  const d=document.createElement('div'); d.className='champ-box';
+  d.innerHTML=`<div class="champ-lbl">🏆 POBEDNIK TURNIRA</div><div class="champ-name">${name}</div>`;
+  return d;
+}
+
+function renderStandings(t) {
+  const all = allMatches(t);
+  const stats = {};
+  t.players.forEach(p => { stats[p]={w:0,l:0}; });
+  all.forEach(m => {
+    if (!m.done) return;
+    if (m.winner && stats[m.winner]) stats[m.winner].w++;
+    if (m.loser  && stats[m.loser])  stats[m.loser].l++;
+  });
+  const rows = t.players.map(p=>({name:p,...stats[p]}))
+    .sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
+  const rc=['rg','rs','rb'];
+  document.getElementById('stTable').innerHTML =
+    `<tr><th>#</th><th>Igrač</th><th>Pobede</th><th>Porazi</th></tr>`+
+    rows.map((r,i)=>`<tr><td class="rn ${rc[i]||''}">${i+1}</td><td>${r.name}</td><td>${r.w}</td><td>${r.l}</td></tr>`).join('');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function allMatches(t) {
+  return [...(t.wB||[]).flat(), ...(t.lB||[]).flat(), t.gf, t.gfr].filter(Boolean);
+}
+function findM(t, id) {
+  if (!id) return null;
+  if (id==='GF') return t.gf; if (id==='GFR') return t.gfr;
+  for (const r of t.wB) for (const m of r) if (m.id===id) return m;
+  for (const r of t.lB) for (const m of r) if (m.id===id) return m;
+  return null;
+}
+function nextPow2(n) { let x=1; while(x<n)x*=2; return x; }
+function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} }
+function getChamp(t) {
+  if (!t.gf||!t.gf.done) return null;
+  if (t.gf.winner===t.gf.p1) return t.gf.winner;
+  if (t.gfr&&t.gfr.done) return t.gfr.winner;
+  return null;
+}
+
+// ─── TOURNAMENT MANAGEMENT ───────────────────────────────────
+function openNewModal() {
+  newPs=[];
+  document.getElementById('inName').value='';
+  document.getElementById('inDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pInput').value='';
+  renderTags(); openOv('newModal');
+}
+function addP() {
+  const inp=document.getElementById('pInput'),n=inp.value.trim();
+  if (!n) return; if (newPs.includes(n)){alert('Igrač već postoji!');return;}
+  newPs.push(n); inp.value=''; renderTags(); inp.focus();
+}
+function removeP(i){newPs.splice(i,1);renderTags();}
+function renderTags(){
+  document.getElementById('pTags').innerHTML=newPs.map((p,i)=>`<div class="tag">${p}<button onclick="removeP(${i})">✕</button></div>`).join('');
+}
+
+async function createTournament() {
+  const name = document.getElementById('inName').value.trim();
+  if (!name){alert('Unesi naziv!');return;}
+  if (newPs.length < 4){alert('Minimum 4 igrača!');return;}
+  if (newPs.length > 32){alert('Maksimum 32 igrača!');return;}
+
+  const seed = [...newPs];
+shuffle(seed);
+
+const size = nextPow2(seed.length);
+const byeCount = size - seed.length;
+for (let i = 0; i < byeCount; i++) {
+  const pos = Math.floor(Math.random() * (seed.length + 1));
+  seed.splice(pos, 0, BYE);
+}
+
+  const t = {
+    id: crypto.randomUUID(),
+    name,
+    date: document.getElementById('inDate').value,
+    players: [...newPs],
+    seed,
+    wB: [],
+    lB: [],
+    gf: null,
+    gfr: null
+  };
+
+  genBracket(t);
+  replayAll(t);
+  resolveByesReplay(t);
+  const dbTournament = {
+    id: t.id,
+    name: t.name,
+    date: t.date,
+    players: t.players,
+    seed: t.seed,
+    wB: t.wB,
+    lB: t.lB,
+    gf: t.gf,
+    gfr: t.gfr
+  };
+
+  const { data, error } = await supabaseClient
+    .from('tournaments')
+    .insert([dbTournament])
+    .select();
+
+  if (error) {
+    console.error(error);
+    alert('Greška pri upisu u bazu!');
+    return;
+  }
+
+  db.push(data[0]);
+  renderHome();
+  closeOv('newModal');
+}
+
+function openTournament(id) {
+  activeTid=id; const t=getT();
+  document.getElementById('bvTitle').textContent=t.name;
+  document.getElementById('navBracket').style.display='';
+  showView('bv'); switchTab('bracket'); renderBracket();
+}
+
+function renderHome() {
+  const grid=document.getElementById('tGrid');
+  if (!db.length){grid.innerHTML='<div style="color:var(--muted);font-size:0.78rem;padding:16px 0;grid-column:1/-1">Nema turnira. Kreiraj prvi!</div>';return;}
+  grid.innerHTML=db.map(t=>{
+    const ch=getChamp(t);
+    return `<div class="t-card" onclick="openTournament('${t.id}')">
+      <div class="t-card-name">${t.name}</div>
+      <div class="t-card-meta">${t.date||'—'} · ${t.players.length} igrača</div>
+      ${ch?`<div class="t-card-champ">🏆 ${ch}</div>`:''}
+      <div class="badge ${ch?'b-done':'b-active'}">${ch?'ZAVRŠEN':'U TOKU'}</div>
+    </div>`;
+  }).join('');
+}
+
+function goHome(){showView('homeView');document.getElementById('navBracket').style.display='none';document.getElementById('navHome').classList.add('active');renderHome();}
+function doReset(){
+  if (!confirm('Resetovati turnir? Svi rezultati biće obrisani!'))return;
+  const t=getT(); t.wB=[]; t.lB=[]; t.gf=null; t.gfr=null;
+  genBracket(t); updateTournament(t); renderBracket();
+}
+function doExport(){
+  const t=getT();
+  const rows=[['Bracket','Meč','Igrač 1','Score 1','Igrač 2','Score 2','Pobednik']];
+  allMatches(t).forEach(m=>{
+    const br=m.id.startsWith('W')?'Winners':m.id.startsWith('L')?'Losers':'Grand Final';
+    rows.push([br,m.id,m.p1||'',m.s1??'',m.p2||'',m.s2??'',m.winner||'']);
+  });
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${t.name.replace(/\s/g,'_')}.csv`;a.click();
+}
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function switchTab(tab){
+  document.getElementById('bracketTab').style.display=tab==='bracket'?'':'none';
+  document.getElementById('standingsTab').style.display=tab==='standings'?'':'none';
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',i===(tab==='bracket'?0:1)));
+}
+
+async function updateTournament(t) {
+  const { error } = await supabaseClient
+    .from('tournaments')
+    .update({
+      id: t.id,
+      name: t.name,
+      date: t.date,
+      players: t.players,
+      seed: t.seed,
+      wB: t.wB,
+      lB: t.lB,
+      gf: t.gf,
+      gfr: t.gfr
+    })
+    .eq('id', t.id);
+
+  if (error) console.error(error);
+}
+
+loadDB();
+</script>
+</body>
+</html>
