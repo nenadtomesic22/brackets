@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Scene Controller – Target Sombor</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<style>
+  :root {
+    --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830;
+    --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:24px 16px 40px;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 20% 30%,rgba(200,255,0,0.05) 0%,transparent 60%),
+               radial-gradient(ellipse at 80% 70%,rgba(255,77,28,0.04) 0%,transparent 50%);}
+
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;position:relative;z-index:1;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--accent);}
+  .logo span{color:var(--text);}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:6px;transition:background 0.3s;}
+  .status-dot.live{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+  .status-txt{font-size:0.65rem;letter-spacing:1px;color:var(--muted);}
+
+  .section{position:relative;z-index:1;margin-bottom:28px;}
+  .section-label{font-size:0.6rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+
+  /* TOURNAMENT SELECTOR */
+  .t-list{display:flex;flex-direction:column;gap:8px;}
+  .t-item{
+    background:var(--card);border:1px solid var(--border);padding:14px 16px;
+    cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;
+  }
+  .t-item:hover{border-color:var(--accent);}
+  .t-item.active{border-color:var(--accent);background:rgba(200,255,0,0.05);}
+  .t-item-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;}
+  .t-item-meta{font-size:0.65rem;color:var(--muted);margin-top:2px;}
+  .t-item-check{color:var(--accent);font-size:1.2rem;opacity:0;}
+  .t-item.active .t-item-check{opacity:1;}
+
+  /* SCENE BUTTONS */
+  .scene-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .scene-btn{
+    background:var(--card);border:1px solid var(--border);
+    padding:18px 8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;
+    font-size:0.85rem;letter-spacing:2px;color:var(--muted);text-align:center;
+    transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .scene-btn:hover{border-color:var(--accent);color:var(--text);}
+  .scene-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.06);}
+  .scene-btn.active .scene-icon{filter:drop-shadow(0 0 6px var(--accent));}
+  .scene-icon{font-size:1.4rem;}
+
+  /* AUTO ROTATE */
+  .auto-row{display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border:1px solid var(--border);padding:14px 16px;}
+  .auto-label{font-size:0.75rem;letter-spacing:1px;}
+  .auto-sub{font-size:0.6rem;color:var(--muted);margin-top:2px;}
+  .toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-slider{
+    position:absolute;inset:0;background:var(--border);cursor:pointer;
+    border-radius:24px;transition:background 0.2s;
+  }
+  .toggle-slider::before{
+    content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;
+    background:var(--muted);border-radius:50%;transition:all 0.2s;
+  }
+  .toggle input:checked + .toggle-slider{background:rgba(200,255,0,0.3);}
+  .toggle input:checked + .toggle-slider::before{transform:translateX(20px);background:var(--accent);}
+
+  /* PROGRESS BAR */
+  .progress-wrap{margin-top:8px;display:none;}
+  .progress-wrap.visible{display:block;}
+  .progress-label{font-size:0.58rem;color:var(--muted);letter-spacing:1px;margin-bottom:4px;display:flex;justify-content:space-between;}
+  .progress-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;}
+
+  /* NAV ARROWS */
+  .nav-arrows{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .nav-arrow{
+    background:var(--surface);border:1px solid var(--border);padding:16px;
+    cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+    letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;
+  }
+  .nav-arrow:hover{border-color:var(--accent);color:var(--accent);}
+  .nav-arrow:active{background:rgba(200,255,0,0.08);}
+
+  /* CURRENT SCENE DISPLAY */
+  .now-playing{
+    background:var(--surface);border:1px solid var(--border);
+    padding:12px 16px;margin-bottom:8px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .np-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 6px var(--accent);flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .np-label{font-size:0.6rem;letter-spacing:2px;color:var(--muted);}
+  .np-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--accent);}
+
+  .divider{height:1px;background:var(--border);margin:24px 0;}
+
+  .no-tournament{font-size:0.75rem;color:var(--muted);padding:16px;text-align:center;
+    border:1px dashed var(--border);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🎯 TARGET <span>CTRL</span></div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-txt" id="statusTxt">CONNECTING...</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">AKTIVAN TURNIR</div>
+  <div class="t-list" id="tList">
+    <div class="no-tournament">Učitavanje...</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-label">TRENUTNA SCENA</div>
+  <div class="now-playing" id="nowPlaying">
+    <div class="np-dot"></div>
+    <div>
+      <div class="np-label">PRIKAZUJE SE</div>
+      <div class="np-name" id="npName">—</div>
+    </div>
+  </div>
+
+  <div class="scene-btns">
+    <button class="scene-btn" data-scene="winners" onclick="setScene('winners')">
+      <span class="scene-icon">🏆</span>
+      GLAVNI ŽREB
+    </button>
+    <button class="scene-btn" data-scene="losers" onclick="setScene('losers')">
+      <span class="scene-icon">⚔️</span>
+      REPASAŽ
+    </button>
+    <button class="scene-btn" data-scene="finale" onclick="setScene('finale')">
+      <span class="scene-icon">🥇</span>
+      FINALE
+    </button>
+  </div>
+
+  <div class="nav-arrows">
+    <button class="nav-arrow" onclick="prevScene()">← PRETHODNA</button>
+    <button class="nav-arrow" onclick="nextScene()">SLEDEĆA →</button>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-label">AUTO-ROTACIJA</div>
+  <div class="auto-row">
+    <div>
+      <div class="auto-label">AUTOMATSKA IZMENA</div>
+      <div class="auto-sub">Menja scenu na svakih 60 sekundi</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="autoToggle" onchange="toggleAuto()">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span>SLEDEĆA SCENA</span>
+      <span id="progressSec">60s</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:100%"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const SCENES = ['winners', 'losers', 'finale'];
+const SCENE_NAMES = { winners: 'GLAVNI ŽREB', losers: 'REPASAŽ', finale: 'FINALE' };
+const AUTO_INTERVAL = 60;
+
+let db = [];
+let state = { tournament_id: null, scene: 'winners', auto_rotate: false };
+let autoTimer = null;
+let autoSeconds = AUTO_INTERVAL;
+
+async function init() {
+  // Load tournaments
+  const { data: tData } = await sb.from('tournaments').select('id,name,date,players').order('date', { ascending: false });
+  db = tData || [];
+
+  // Load scene state
+  const { data: sData } = await sb.from('scene_state').select('*').eq('id', 1).single();
+  if (sData) state = sData;
+
+  renderTournaments();
+  renderSceneUI();
+  subscribeState();
+
+  document.getElementById('statusDot').classList.add('live');
+  document.getElementById('statusTxt').textContent = 'LIVE';
+}
+
+function renderTournaments() {
+  const list = document.getElementById('tList');
+  if (!db.length) {
+    list.innerHTML = '<div class="no-tournament">Nema turnira u bazi</div>';
+    return;
+  }
+  list.innerHTML = db.map(t => `
+    <div class="t-item ${state.tournament_id === t.id ? 'active' : ''}" onclick="selectTournament('${t.id}')">
+      <div>
+        <div class="t-item-name">${t.name}</div>
+        <div class="t-item-meta">${t.date || '—'} · ${t.players.length} igrača</div>
+      </div>
+      <span class="t-item-check">✓</span>
+    </div>
+  `).join('');
+}
+
+function renderSceneUI() {
+  // Scene buttons
+  document.querySelectorAll('.scene-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.scene === state.scene);
+  });
+
+  // Now playing
+  document.getElementById('npName').textContent = SCENE_NAMES[state.scene] || '—';
+
+  // Auto toggle
+  const tog = document.getElementById('autoToggle');
+  tog.checked = state.auto_rotate;
+  document.getElementById('progressWrap').classList.toggle('visible', state.auto_rotate);
+
+  if (state.auto_rotate) startAutoTimer();
+  else stopAutoTimer();
+}
+
+async function selectTournament(id) {
+  state.tournament_id = id;
+  await pushState();
+  renderTournaments();
+}
+
+async function setScene(scene) {
+  state.scene = scene;
+  await pushState();
+  renderSceneUI();
+  if (state.auto_rotate) resetAutoTimer();
+}
+
+async function toggleAuto() {
+  state.auto_rotate = document.getElementById('autoToggle').checked;
+  await pushState();
+  renderSceneUI();
+}
+
+function nextScene() {
+  const idx = SCENES.indexOf(state.scene);
+  setScene(SCENES[(idx + 1) % SCENES.length]);
+}
+
+function prevScene() {
+  const idx = SCENES.indexOf(state.scene);
+  setScene(SCENES[(idx - 1 + SCENES.length) % SCENES.length]);
+}
+
+async function pushState() {
+  await sb.from('scene_state').update({
+    tournament_id: state.tournament_id,
+    scene: state.scene,
+    auto_rotate: state.auto_rotate,
+    updated_at: new Date().toISOString()
+  }).eq('id', 1);
+}
+
+function subscribeState() {
+  sb.channel('scene_state_ctrl')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scene_state' }, payload => {
+      state = payload.new;
+      renderTournaments();
+      renderSceneUI();
+    })
+    .subscribe();
+}
+
+// ── AUTO TIMER ──────────────────────────────────────
+function startAutoTimer() {
+  stopAutoTimer();
+  autoSeconds = AUTO_INTERVAL;
+  updateProgressBar();
+  autoTimer = setInterval(() => {
+    autoSeconds--;
+    updateProgressBar();
+    if (autoSeconds <= 0) {
+      nextScene();
+      autoSeconds = AUTO_INTERVAL;
+    }
+  }, 1000);
+}
+
+function stopAutoTimer() {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressSec').textContent = `${AUTO_INTERVAL}s`;
+}
+
+function resetAutoTimer() {
+  autoSeconds = AUTO_INTERVAL;
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  const pct = (autoSeconds / AUTO_INTERVAL) * 100;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressSec').textContent = `${autoSeconds}s`;
+}
+
+init();
+</script>
+</body>
+</html>

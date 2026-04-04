@@ -160,10 +160,20 @@
       <button class="tool-btn danger" onclick="doReset()">↺ RESETUJ</button>
     </div>
     <div id="bracketTab">
-      <div class="bracket-scroll"><div class="blabel">GLAVNI ŽREB</div><div class="rounds" id="wRounds"></div></div>
-      <div class="bracket-scroll"><div class="blabel lb">REPASAŽ</div><div class="rounds" id="lRounds"></div></div>
-      <div class="gf-section"><div class="blabel gfl">🏆 FINALE</div><div id="gfArea"></div></div>
-    </div>
+  <div id="tvSceneBar" style="display:none;background:rgba(200,255,0,0.06);border-bottom:1px solid var(--border);padding:8px 32px;font-size:0.62rem;letter-spacing:2px;color:var(--accent);align-items:center;gap:8px;">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 6px var(--accent)"></span>
+    <span id="tvSceneLabel">TV MOD</span>
+  </div>
+  <div id="sceneWinners">
+    <div class="bracket-scroll"><div class="blabel">GLAVNI ŽREB</div><div class="rounds" id="wRounds"></div></div>
+  </div>
+  <div id="sceneLosers" style="display:none">
+    <div class="bracket-scroll"><div class="blabel lb">REPASAŽ</div><div class="rounds" id="lRounds"></div></div>
+  </div>
+  <div id="sceneFinale" style="display:none">
+    <div class="gf-section"><div class="blabel gfl">🏆 FINALE</div><div id="gfArea"></div></div>
+  </div>
+</div>
     <div id="standingsTab" style="display:none">
       <div class="standings-wrap">
         <div class="section-title">TABELA <em>IGRAČA</em></div>
@@ -274,6 +284,8 @@ async function loadDB() {
     t._size = size;
   });
   subscribeRealtime()
+  loadSceneState();
+  subscribeScene();
   renderHome();
 }
 function subscribeRealtime() {
@@ -1048,6 +1060,44 @@ async function updateTournament(t) {
 }
 
 loadDB();
+
+function subscribeScene() {
+  supabaseClient.channel('scene_state_tv')
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'scene_state' },
+      p => applySceneState(p.new))
+    .subscribe();
+}
+async function loadSceneState() {
+  const { data } = await supabaseClient.from('scene_state').select('*').eq('id',1).single();
+  if (data) applySceneState(data);
+}
+function applySceneState(state) {
+  if (!state?.tournament_id) { setTvMode(false); return; }
+  const t = db.find(t => t.id === state.tournament_id);
+  if (!t) return;
+  if (activeTid !== state.tournament_id) {
+    activeTid = state.tournament_id;
+    document.getElementById('bvTitle').textContent = t.name;
+    document.getElementById('navBracket').style.display = '';
+    showView('bv'); switchTab('bracket');
+    replayAll(t); renderW(t); renderL(t); renderGF(t); renderStandings(t);
+  }
+  setTvMode(true, state.scene);
+}
+function setTvMode(active, scene='winners') {
+  const bar = document.getElementById('tvSceneBar');
+  if (!active) {
+    bar.style.display = 'none';
+    ['sceneWinners','sceneLosers','sceneFinale'].forEach(id => document.getElementById(id).style.display = '');
+    return;
+  }
+  bar.style.display = 'flex';
+  const names = { winners:'📺 GLAVNI ŽREB', losers:'📺 REPASAŽ', finale:'📺 FINALE' };
+  document.getElementById('tvSceneLabel').textContent = names[scene] || '📺 TV MOD';
+  document.getElementById('sceneWinners').style.display = scene==='winners' ? '' : 'none';
+  document.getElementById('sceneLosers').style.display  = scene==='losers'  ? '' : 'none';
+  document.getElementById('sceneFinale').style.display  = scene==='finale'  ? '' : 'none';
+}
 </script>
 </body>
 </html>
