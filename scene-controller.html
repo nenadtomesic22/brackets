@@ -3,153 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Scene Controller – Target Sombor</title>
+<title>Controller – Target Sombor</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-  :root {
-    --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830;
-    --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700;
-  }
+  :root { --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830; --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700; }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:24px 16px 40px;}
-  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse at 20% 30%,rgba(200,255,0,0.05) 0%,transparent 60%),
-               radial-gradient(ellipse at 80% 70%,rgba(255,77,28,0.04) 0%,transparent 50%);}
+  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:20px 16px 60px;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(200,255,0,0.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(255,77,28,0.04) 0%,transparent 50%);}
 
-  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;position:relative;z-index:1;}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--accent);}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;position:relative;z-index:1;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;color:var(--accent);}
   .logo span{color:var(--text);}
-  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:6px;transition:background 0.3s;}
+  .live-row{display:flex;align-items:center;gap:6px;}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all 0.3s;}
   .status-dot.live{background:var(--accent);box-shadow:0 0 8px var(--accent);}
-  .status-txt{font-size:0.65rem;letter-spacing:1px;color:var(--muted);}
+  .status-txt{font-size:0.62rem;letter-spacing:1px;color:var(--muted);}
 
-  .section{position:relative;z-index:1;margin-bottom:28px;}
-  .section-label{font-size:0.6rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .section{position:relative;z-index:1;margin-bottom:24px;}
+  .section-label{font-size:0.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
 
-  /* TOURNAMENT SELECTOR */
-  .t-list{display:flex;flex-direction:column;gap:8px;}
-  .t-item{
-    background:var(--card);border:1px solid var(--border);padding:14px 16px;
-    cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;
-  }
+  /* TOURNAMENT LIST */
+  .t-list{display:flex;flex-direction:column;gap:6px;}
+  .t-item{background:var(--card);border:1px solid var(--border);padding:12px 14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;}
   .t-item:hover{border-color:var(--accent);}
   .t-item.active{border-color:var(--accent);background:rgba(200,255,0,0.05);}
-  .t-item-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;}
-  .t-item-meta{font-size:0.65rem;color:var(--muted);margin-top:2px;}
-  .t-item-check{color:var(--accent);font-size:1.2rem;opacity:0;}
+  .t-item-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;}
+  .t-item-meta{font-size:0.62rem;color:var(--muted);margin-top:2px;}
+  .t-item-check{color:var(--accent);font-size:1.1rem;opacity:0;flex-shrink:0;}
   .t-item.active .t-item-check{opacity:1;}
+  .no-t{font-size:0.72rem;color:var(--muted);padding:14px;text-align:center;border:1px dashed var(--border);}
 
-  /* SCENE BUTTONS */
-  .scene-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
-  .scene-btn{
-    background:var(--card);border:1px solid var(--border);
-    padding:18px 8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;
-    font-size:0.85rem;letter-spacing:2px;color:var(--muted);text-align:center;
-    transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:6px;
-  }
+  /* SCENE CONTROL */
+  .scene-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .scene-btn{background:var(--card);border:1px solid var(--border);padding:14px 6px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:5px;}
   .scene-btn:hover{border-color:var(--accent);color:var(--text);}
   .scene-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.06);}
-  .scene-btn.active .scene-icon{filter:drop-shadow(0 0 6px var(--accent));}
-  .scene-icon{font-size:1.4rem;}
-
-  /* AUTO ROTATE */
-  .auto-row{display:flex;align-items:center;justify-content:space-between;
-    background:var(--card);border:1px solid var(--border);padding:14px 16px;}
-  .auto-label{font-size:0.75rem;letter-spacing:1px;}
-  .auto-sub{font-size:0.6rem;color:var(--muted);margin-top:2px;}
-  .toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
-  .toggle input{opacity:0;width:0;height:0;}
-  .toggle-slider{
-    position:absolute;inset:0;background:var(--border);cursor:pointer;
-    border-radius:24px;transition:background 0.2s;
-  }
-  .toggle-slider::before{
-    content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;
-    background:var(--muted);border-radius:50%;transition:all 0.2s;
-  }
-  .toggle input:checked + .toggle-slider{background:rgba(200,255,0,0.3);}
-  .toggle input:checked + .toggle-slider::before{transform:translateX(20px);background:var(--accent);}
-
-  /* PROGRESS BAR */
-  .progress-wrap{margin-top:8px;display:none;}
-  .progress-wrap.visible{display:block;}
-  .progress-label{font-size:0.58rem;color:var(--muted);letter-spacing:1px;margin-bottom:4px;display:flex;justify-content:space-between;}
-  .progress-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-  .progress-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;}
-
-  /* NAV ARROWS */
-  .nav-arrows{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-  .nav-arrow{
-    background:var(--surface);border:1px solid var(--border);padding:16px;
-    cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:1rem;
-    letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;
-  }
+  .scene-icon{font-size:1.2rem;}
+  .now-playing{background:var(--surface);border:1px solid var(--border);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .np-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px var(--accent);flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .np-lbl{font-size:0.58rem;letter-spacing:2px;color:var(--muted);}
+  .np-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--accent);}
+  .nav-arrows{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+  .nav-arrow{background:var(--surface);border:1px solid var(--border);padding:13px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;}
   .nav-arrow:hover{border-color:var(--accent);color:var(--accent);}
   .nav-arrow:active{background:rgba(200,255,0,0.08);}
 
-  /* CURRENT SCENE DISPLAY */
-  .now-playing{
-    background:var(--surface);border:1px solid var(--border);
-    padding:12px 16px;margin-bottom:8px;
-    display:flex;align-items:center;gap:10px;
-  }
-  .np-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
-    box-shadow:0 0 6px var(--accent);flex-shrink:0;animation:pulse 2s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-  .np-label{font-size:0.6rem;letter-spacing:2px;color:var(--muted);}
-  .np-name{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--accent);}
+  /* AUTO ROTATE */
+  .auto-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);padding:12px 14px;}
+  .auto-lbl{font-size:0.72rem;letter-spacing:1px;}
+  .auto-sub{font-size:0.58rem;color:var(--muted);margin-top:2px;}
+  .toggle{position:relative;width:42px;height:22px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:var(--border);cursor:pointer;border-radius:22px;transition:background 0.2s;}
+  .toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:all 0.2s;}
+  .toggle input:checked+.toggle-slider{background:rgba(200,255,0,0.3);}
+  .toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--accent);}
+  .progress-wrap{margin-top:6px;display:none;}
+  .progress-wrap.visible{display:block;}
+  .progress-lbl{font-size:0.56rem;color:var(--muted);letter-spacing:1px;margin-bottom:3px;display:flex;justify-content:space-between;}
+  .progress-bg{height:2px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear;}
 
-  .divider{height:1px;background:var(--border);margin:24px 0;}
+  /* SCORE ENTRY */
+  .match-list{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
+  .match-row{background:var(--card);border:1px solid var(--border);padding:10px 12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;}
+  .match-row:hover{border-color:var(--accent);}
+  .match-row.played{border-color:rgba(200,255,0,0.2);}
+  .match-row.bye-row{opacity:0.4;cursor:default;}
+  .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;}
+  .mr-players{flex:1;font-size:0.75rem;}
+  .mr-vs{color:var(--muted);font-size:0.62rem;margin:0 4px;}
+  .mr-score{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:var(--accent);min-width:40px;text-align:right;}
+  .match-tabs{display:flex;gap:0;margin-bottom:8px;}
+  .match-tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+  .match-tab:first-child{border-right:none;}
+  .match-tab.active{background:var(--card);color:var(--accent);border-color:var(--accent);}
 
-  .no-tournament{font-size:0.75rem;color:var(--muted);padding:16px;text-align:center;
-    border:1px dashed var(--border);}
+  /* ACTIONS */
+  .actions-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .act-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;flex:1;text-align:center;}
+  .act-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .act-btn.danger{border-color:rgba(255,77,28,0.3);color:var(--accent2);}
+  .act-btn.danger:hover{border-color:var(--accent2);}
+  .act-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:0.9rem;}
+  .act-btn.primary:hover{background:#d4ff33;}
+
+  .divider{height:1px;background:var(--border);margin:20px 0;}
+
+  /* MODALS */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border);padding:28px;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;}
+  .modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--accent);margin-bottom:18px;}
+  .close-x{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;}
+  .close-x:hover{color:var(--accent2);}
+  .fg{margin-bottom:14px;}
+  label{display:block;font-size:0.65rem;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;}
+  input[type=text],input[type=date]{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 11px;font-family:'DM Mono',monospace;font-size:0.8rem;outline:none;transition:border-color 0.2s;}
+  input:focus{border-color:var(--accent);}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .tag{background:var(--surface);border:1px solid var(--border);padding:3px 8px;font-size:0.68rem;display:flex;align-items:center;gap:4px;}
+  .tag button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:0.8rem;}
+  .row{display:flex;gap:7px;}
+  .btn{background:var(--accent);color:var(--bg);border:none;padding:9px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+  .btn:hover{background:#d4ff33;}
+  .btn-o{background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+  .btn-o:hover{border-color:var(--accent);color:var(--accent);}
+  .modal-actions{display:flex;gap:7px;margin-top:18px;}
+
+  /* SCORE MODAL */
+  .score-modal{width:300px;border-color:rgba(200,255,0,0.5);}
+  .sp-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .sp{flex:1;text-align:center;}
+  .sp-name{font-size:0.65rem;color:var(--muted);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .s-inp{width:58px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px;outline:none;}
+  .s-inp:focus{border-color:var(--accent);}
+  .vs{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--muted);}
+  .s-info{font-size:0.64rem;color:var(--muted);margin-bottom:12px;line-height:1.7;}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">🎯 TARGET <span>CTRL</span></div>
-  <div style="display:flex;align-items:center;gap:6px">
+  <div class="live-row">
     <span class="status-dot" id="statusDot"></span>
     <span class="status-txt" id="statusTxt">CONNECTING...</span>
   </div>
 </div>
 
+<!-- TURNIRI -->
 <div class="section">
   <div class="section-label">AKTIVAN TURNIR</div>
-  <div class="t-list" id="tList">
-    <div class="no-tournament">Učitavanje...</div>
+  <div class="t-list" id="tList"><div class="no-t">Učitavanje...</div></div>
+  <div style="margin-top:8px">
+    <button class="act-btn primary" onclick="openNewModal()" style="width:100%">+ NOVI TURNIR</button>
   </div>
 </div>
 
 <div class="divider"></div>
 
+<!-- SCENA -->
 <div class="section">
-  <div class="section-label">TRENUTNA SCENA</div>
-  <div class="now-playing" id="nowPlaying">
+  <div class="section-label">SCENA NA TV-U</div>
+  <div class="now-playing">
     <div class="np-dot"></div>
-    <div>
-      <div class="np-label">PRIKAZUJE SE</div>
-      <div class="np-name" id="npName">—</div>
-    </div>
+    <div><div class="np-lbl">PRIKAZUJE SE</div><div class="np-name" id="npName">—</div></div>
   </div>
-
   <div class="scene-btns">
-    <button class="scene-btn" data-scene="winners" onclick="setScene('winners')">
-      <span class="scene-icon">🏆</span>
-      GLAVNI ŽREB
-    </button>
-    <button class="scene-btn" data-scene="losers" onclick="setScene('losers')">
-      <span class="scene-icon">⚔️</span>
-      REPASAŽ
-    </button>
-    <button class="scene-btn" data-scene="finale" onclick="setScene('finale')">
-      <span class="scene-icon">🥇</span>
-      FINALE
-    </button>
+    <button class="scene-btn" data-scene="winners" onclick="setScene('winners')"><span class="scene-icon">🏆</span>GLAVNI ŽREB</button>
+    <button class="scene-btn" data-scene="losers"  onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
+    <button class="scene-btn" data-scene="finale"  onclick="setScene('finale')"><span class="scene-icon">🥇</span>FINALE</button>
   </div>
-
   <div class="nav-arrows">
     <button class="nav-arrow" onclick="prevScene()">← PRETHODNA</button>
     <button class="nav-arrow" onclick="nextScene()">SLEDEĆA →</button>
@@ -158,25 +165,80 @@
 
 <div class="divider"></div>
 
+<!-- AUTO ROTACIJA -->
 <div class="section">
   <div class="section-label">AUTO-ROTACIJA</div>
   <div class="auto-row">
-    <div>
-      <div class="auto-label">AUTOMATSKA IZMENA</div>
-      <div class="auto-sub">Menja scenu na svakih 60 sekundi</div>
-    </div>
-    <label class="toggle">
-      <input type="checkbox" id="autoToggle" onchange="toggleAuto()">
-      <span class="toggle-slider"></span>
-    </label>
+    <div><div class="auto-lbl">AUTOMATSKA IZMENA</div><div class="auto-sub">Menja scenu na svakih 60 sekundi</div></div>
+    <label class="toggle"><input type="checkbox" id="autoToggle" onchange="toggleAuto()"><span class="toggle-slider"></span></label>
   </div>
   <div class="progress-wrap" id="progressWrap">
-    <div class="progress-label">
-      <span>SLEDEĆA SCENA</span>
-      <span id="progressSec">60s</span>
+    <div class="progress-lbl"><span>SLEDEĆA SCENA</span><span id="progressSec">60s</span></div>
+    <div class="progress-bg"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- MEČEVI -->
+<div class="section">
+  <div class="section-label">UNOS REZULTATA</div>
+  <div class="match-tabs">
+    <button class="match-tab active" onclick="switchMatchTab('w')">GLAVNI ŽREB</button>
+    <button class="match-tab" onclick="switchMatchTab('l')">REPASAŽ</button>
+    <button class="match-tab" onclick="switchMatchTab('f')">FINALE</button>
+  </div>
+  <div class="match-list" id="matchList"></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- AKCIJE -->
+<div class="section">
+  <div class="section-label">OPCIJE TURNIRA</div>
+  <div class="actions-row">
+    <button class="act-btn" onclick="doExport()">⬇ CSV</button>
+    <button class="act-btn danger" onclick="doReset()">↺ RESETUJ</button>
+  </div>
+</div>
+
+<!-- NOVI TURNIR MODAL -->
+<div class="overlay" id="newModal">
+  <div class="modal">
+    <button class="close-x" onclick="closeOv('newModal')">✕</button>
+    <h2>NOVI TURNIR</h2>
+    <div class="fg"><label>Naziv turnira</label><input type="text" id="inName" placeholder="npr. Pikado liga Sombor 2026"></div>
+    <div class="fg"><label>Datum</label><input type="date" id="inDate"></div>
+    <div class="fg">
+      <label>Igrači</label>
+      <div class="tags" id="pTags"></div>
+      <div class="row">
+        <input type="text" id="pInput" placeholder="Ime igrača" onkeydown="if(event.key==='Enter')addP()">
+        <button class="btn" onclick="addP()">DODAJ</button>
+      </div>
+      <div style="font-size:0.6rem;color:var(--muted);margin-top:4px">Min 4 igrača.</div>
     </div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progressFill" style="width:100%"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="createTournament()">KREIRAJ</button>
+      <button class="btn-o" onclick="closeOv('newModal')">OTKAŽI</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCORE MODAL -->
+<div class="overlay" id="scoreModal">
+  <div class="modal score-modal">
+    <button class="close-x" onclick="closeOv('scoreModal')">✕</button>
+    <h2>REZULTAT</h2>
+    <div class="sp-row">
+      <div class="sp"><div class="sp-name" id="sp1n"></div><input type="number" class="s-inp" id="sp1" min="0" max="99" value="0"></div>
+      <div class="vs">VS</div>
+      <div class="sp"><div class="sp-name" id="sp2n"></div><input type="number" class="s-inp" id="sp2" min="0" max="99" value="0"></div>
+    </div>
+    <div class="s-info" id="sInfo"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="submitScore()">POTVRDI</button>
+      <button class="btn-o" onclick="closeOv('scoreModal')">OTKAŽI</button>
     </div>
   </div>
 </div>
@@ -186,146 +248,348 @@ const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SCENES = ['winners', 'losers', 'finale'];
-const SCENE_NAMES = { winners: 'GLAVNI ŽREB', losers: 'REPASAŽ', finale: 'FINALE' };
+const BYE = "__BYE__";
+const SCENES = ['winners','losers','finale'];
+const SCENE_NAMES = { winners:'GLAVNI ŽREB', losers:'REPASAŽ', finale:'FINALE' };
 const AUTO_INTERVAL = 60;
 
 let db = [];
-let state = { tournament_id: null, scene: 'winners', auto_rotate: false };
+let sceneState = { tournament_id: null, scene: 'winners', auto_rotate: false };
+let activeTid = null;
+let pendingId = null;
+let newPs = [];
 let autoTimer = null;
 let autoSeconds = AUTO_INTERVAL;
+let matchTab = 'w';
 
+const getT = () => db.find(t => t.id === activeTid);
+
+// ─── INIT ────────────────────────────────────────────────────
 async function init() {
-  // Load tournaments
-  const { data: tData } = await sb.from('tournaments').select('id,name,date,players').order('date', { ascending: false });
+  const { data: tData } = await sb.from('tournaments').select('*').order('date', { ascending: false });
   db = tData || [];
+  db.forEach(t => { t._routes = buildRoutingTable(nextPow2(t.seed.length)); });
 
-  // Load scene state
-  const { data: sData } = await sb.from('scene_state').select('*').eq('id', 1).single();
-  if (sData) state = sData;
+  const { data: sData } = await sb.from('scene_state').select('*').eq('id',1).single();
+  if (sData) { sceneState = sData; activeTid = sData.tournament_id; }
 
   renderTournaments();
   renderSceneUI();
-  subscribeState();
+  renderMatchList();
+  subscribeRealtime();
+  subscribeSceneState();
 
   document.getElementById('statusDot').classList.add('live');
   document.getElementById('statusTxt').textContent = 'LIVE';
 }
 
+// ─── TOURNAMENTS ─────────────────────────────────────────────
 function renderTournaments() {
   const list = document.getElementById('tList');
-  if (!db.length) {
-    list.innerHTML = '<div class="no-tournament">Nema turnira u bazi</div>';
-    return;
-  }
-  list.innerHTML = db.map(t => `
-    <div class="t-item ${state.tournament_id === t.id ? 'active' : ''}" onclick="selectTournament('${t.id}')">
+  if (!db.length) { list.innerHTML = '<div class="no-t">Nema turnira u bazi</div>'; return; }
+  list.innerHTML = db.map(t => {
+    const ch = getChamp(t);
+    return `<div class="t-item ${sceneState.tournament_id===t.id?'active':''}" onclick="selectTournament('${t.id}')">
       <div>
         <div class="t-item-name">${t.name}</div>
-        <div class="t-item-meta">${t.date || '—'} · ${t.players.length} igrača</div>
+        <div class="t-item-meta">${t.date||'—'} · ${t.players.length} igrača${ch?' · 🏆 '+ch:''}</div>
       </div>
       <span class="t-item-check">✓</span>
-    </div>
-  `).join('');
-}
-
-function renderSceneUI() {
-  // Scene buttons
-  document.querySelectorAll('.scene-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.scene === state.scene);
-  });
-
-  // Now playing
-  document.getElementById('npName').textContent = SCENE_NAMES[state.scene] || '—';
-
-  // Auto toggle
-  const tog = document.getElementById('autoToggle');
-  tog.checked = state.auto_rotate;
-  document.getElementById('progressWrap').classList.toggle('visible', state.auto_rotate);
-
-  if (state.auto_rotate) startAutoTimer();
-  else stopAutoTimer();
+    </div>`;
+  }).join('');
 }
 
 async function selectTournament(id) {
-  state.tournament_id = id;
-  await pushState();
+  activeTid = id;
+  sceneState.tournament_id = id;
+  await pushSceneState();
   renderTournaments();
+  renderMatchList();
+}
+
+// ─── SCENE ───────────────────────────────────────────────────
+function renderSceneUI() {
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('active', b.dataset.scene === sceneState.scene));
+  document.getElementById('npName').textContent = SCENE_NAMES[sceneState.scene] || '—';
+  const tog = document.getElementById('autoToggle');
+  tog.checked = sceneState.auto_rotate;
+  document.getElementById('progressWrap').classList.toggle('visible', sceneState.auto_rotate);
+  if (sceneState.auto_rotate) startAutoTimer(); else stopAutoTimer();
 }
 
 async function setScene(scene) {
-  state.scene = scene;
-  await pushState();
+  sceneState.scene = scene;
+  await pushSceneState();
   renderSceneUI();
-  if (state.auto_rotate) resetAutoTimer();
+  if (sceneState.auto_rotate) resetAutoTimer();
 }
+
+function nextScene() { const i=SCENES.indexOf(sceneState.scene); setScene(SCENES[(i+1)%SCENES.length]); }
+function prevScene() { const i=SCENES.indexOf(sceneState.scene); setScene(SCENES[(i-1+SCENES.length)%SCENES.length]); }
 
 async function toggleAuto() {
-  state.auto_rotate = document.getElementById('autoToggle').checked;
-  await pushState();
+  sceneState.auto_rotate = document.getElementById('autoToggle').checked;
+  await pushSceneState();
   renderSceneUI();
 }
 
-function nextScene() {
-  const idx = SCENES.indexOf(state.scene);
-  setScene(SCENES[(idx + 1) % SCENES.length]);
-}
-
-function prevScene() {
-  const idx = SCENES.indexOf(state.scene);
-  setScene(SCENES[(idx - 1 + SCENES.length) % SCENES.length]);
-}
-
-async function pushState() {
+async function pushSceneState() {
   await sb.from('scene_state').update({
-    tournament_id: state.tournament_id,
-    scene: state.scene,
-    auto_rotate: state.auto_rotate,
+    tournament_id: sceneState.tournament_id,
+    scene: sceneState.scene,
+    auto_rotate: sceneState.auto_rotate,
     updated_at: new Date().toISOString()
-  }).eq('id', 1);
+  }).eq('id',1);
 }
 
-function subscribeState() {
-  sb.channel('scene_state_ctrl')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scene_state' }, payload => {
-      state = payload.new;
-      renderTournaments();
+function subscribeSceneState() {
+  sb.channel('scene_ctrl')
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'scene_state' }, p => {
+      sceneState = p.new;
       renderSceneUI();
+      renderTournaments();
     })
     .subscribe();
 }
 
-// ── AUTO TIMER ──────────────────────────────────────
+// ─── AUTO TIMER ──────────────────────────────────────────────
 function startAutoTimer() {
-  stopAutoTimer();
-  autoSeconds = AUTO_INTERVAL;
-  updateProgressBar();
+  stopAutoTimer(); autoSeconds = AUTO_INTERVAL; updateProgressBar();
   autoTimer = setInterval(() => {
     autoSeconds--;
     updateProgressBar();
-    if (autoSeconds <= 0) {
-      nextScene();
-      autoSeconds = AUTO_INTERVAL;
-    }
+    if (autoSeconds <= 0) { nextScene(); autoSeconds = AUTO_INTERVAL; }
   }, 1000);
 }
-
 function stopAutoTimer() {
   if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressSec').textContent = `${AUTO_INTERVAL}s`;
 }
-
-function resetAutoTimer() {
-  autoSeconds = AUTO_INTERVAL;
-  updateProgressBar();
-}
-
+function resetAutoTimer() { autoSeconds = AUTO_INTERVAL; updateProgressBar(); }
 function updateProgressBar() {
-  const pct = (autoSeconds / AUTO_INTERVAL) * 100;
-  document.getElementById('progressFill').style.width = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${(autoSeconds/AUTO_INTERVAL)*100}%`;
   document.getElementById('progressSec').textContent = `${autoSeconds}s`;
 }
+
+// ─── MATCH LIST ──────────────────────────────────────────────
+function switchMatchTab(tab) {
+  matchTab = tab;
+  document.querySelectorAll('.match-tab').forEach((b,i) => b.classList.toggle('active', ['w','l','f'][i]===tab));
+  renderMatchList();
+}
+
+function renderMatchList() {
+  const t = getT();
+  const list = document.getElementById('matchList');
+  if (!t) { list.innerHTML = '<div class="no-t" style="padding:12px">Izaberi turnir</div>'; return; }
+
+  replayAll(t);
+  let matches = [];
+  if (matchTab === 'w') matches = (t.wB||[]).flat();
+  else if (matchTab === 'l') matches = (t.lB||[]).flat();
+  else matches = [t.gf, t.gfr].filter(Boolean);
+
+  if (!matches.length) { list.innerHTML = '<div class="no-t" style="padding:10px">Nema mečeva</div>'; return; }
+
+  list.innerHTML = matches.map(m => {
+    const isBye = m.p1 === BYE || m.p2 === BYE;
+    const p1 = m.p1 === BYE ? 'BYE' : (m.p1 || 'TBD');
+    const p2 = m.p2 === BYE ? 'BYE' : (m.p2 || 'TBD');
+    const score = m.done && !isBye ? `${m.s1}:${m.s2}` : '';
+    return `<div class="match-row ${m.done&&!isBye?'played':''} ${isBye?'bye-row':''}"
+      onclick="${isBye?'':'openScoreModal(\''+m.id+'\')'}"
+    >
+      <span class="mr-id">${m.id}</span>
+      <span class="mr-players">${p1}<span class="mr-vs">vs</span>${p2}</span>
+      <span class="mr-score">${score}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── SCORE SUBMIT ────────────────────────────────────────────
+function openScoreModal(id) {
+  const t = getT(); if (!t) return;
+  const m = findM(t, id); if (!m) return;
+  if (m.p1 === BYE || m.p2 === BYE) return;
+  pendingId = id;
+  document.getElementById('sp1n').textContent = m.p1 || 'TBD';
+  document.getElementById('sp2n').textContent = m.p2 || 'TBD';
+  document.getElementById('sp1').value = m.s1 ?? 0;
+  document.getElementById('sp2').value = m.s2 ?? 0;
+  document.getElementById('sInfo').innerHTML = `Meč: <strong>${id}</strong>`+(m.done?'<br><span style="color:var(--accent2)">⚠ Već odigran — izmena rekalkuliše bracket</span>':'');
+  openOv('scoreModal');
+}
+
+async function submitScore() {
+  const t = getT(); const m = findM(t, pendingId); if (!m) return;
+  const s1 = parseInt(document.getElementById('sp1').value)||0;
+  const s2 = parseInt(document.getElementById('sp2').value)||0;
+  if (s1 === s2) { alert('Rezultat ne može biti nerešen!'); return; }
+  m.s1=s1; m.s2=s2; m.done=true;
+  m.winner = s1>s2 ? (m.p1||'TBD') : (m.p2||'TBD');
+  m.loser  = s1>s2 ? (m.p2||'TBD') : (m.p1||'TBD');
+  replayAll(t);
+  await updateTournament(t);
+  closeOv('scoreModal');
+  renderMatchList();
+}
+
+// ─── NEW TOURNAMENT ──────────────────────────────────────────
+function openNewModal() {
+  newPs=[];
+  document.getElementById('inName').value='';
+  document.getElementById('inDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pInput').value='';
+  renderTags(); openOv('newModal');
+}
+function addP() {
+  const inp=document.getElementById('pInput'),n=inp.value.trim();
+  if (!n) return; if (newPs.includes(n)){alert('Igrač već postoji!');return;}
+  newPs.push(n); inp.value=''; renderTags(); inp.focus();
+}
+function removeP(i){newPs.splice(i,1);renderTags();}
+function renderTags(){
+  document.getElementById('pTags').innerHTML=newPs.map((p,i)=>`<div class="tag">${p}<button onclick="removeP(${i})">✕</button></div>`).join('');
+}
+
+async function createTournament() {
+  const name=document.getElementById('inName').value.trim();
+  if (!name){alert('Unesi naziv!');return;}
+  if (newPs.length<4){alert('Minimum 4 igrača!');return;}
+  if (newPs.length>32){alert('Maksimum 32 igrača!');return;}
+  const seed=[...newPs]; shuffle(seed);
+  const size=nextPow2(seed.length);
+  for (let i=seed.length;i<size;i++){const pos=Math.floor(Math.random()*(seed.length+1));seed.splice(pos,0,BYE);}
+  const t={id:crypto.randomUUID(),name,date:document.getElementById('inDate').value,players:[...newPs],seed,wB:[],lB:[],gf:null,gfr:null};
+  genBracket(t); replayAll(t); resolveByesReplay(t);
+  const {data,error}=await sb.from('tournaments').insert([{id:t.id,name:t.name,date:t.date,players:t.players,seed:t.seed,wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr}]).select();
+  if (error){console.error(error);alert('Greška!');return;}
+  db.unshift(data[0]);
+  activeTid=data[0].id; sceneState.tournament_id=data[0].id;
+  await pushSceneState();
+  renderTournaments(); renderMatchList(); closeOv('newModal');
+}
+
+// ─── REALTIME ────────────────────────────────────────────────
+function subscribeRealtime() {
+  sb.channel('tournaments_ctrl')
+    .on('postgres_changes',{event:'*',schema:'public',table:'tournaments'},payload=>{
+      const u=payload.new;
+      const idx=db.findIndex(t=>t.id===u.id);
+      if (idx!==-1) db[idx]=u; else db.unshift(u);
+      renderTournaments(); renderMatchList();
+    })
+    .subscribe();
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────
+async function doReset() {
+  if (!confirm('Resetovati turnir? Svi rezultati biće obrisani!')) return;
+  const t=getT(); if (!t) return;
+  t.wB=[]; t.lB=[]; t.gf=null; t.gfr=null;
+  genBracket(t);
+  await updateTournament(t);
+  renderMatchList();
+}
+
+function doExport() {
+  const t=getT(); if (!t) return;
+  const rows=[['Bracket','Meč','Igrač 1','Score 1','Igrač 2','Score 2','Pobednik']];
+  allMatches(t).forEach(m=>{
+    const br=m.id.startsWith('W')?'Winners':m.id.startsWith('L')?'Losers':'Grand Final';
+    rows.push([br,m.id,m.p1||'',m.s1??'',m.p2||'',m.s2??'',m.winner||'']);
+  });
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`${t.name.replace(/\s/g,'_')}.csv`;a.click();
+}
+
+async function updateTournament(t) {
+  const {error}=await sb.from('tournaments').update({wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr}).eq('id',t.id);
+  if (error) console.error(error);
+}
+
+// ─── BRACKET ENGINE (full copy from index.html) ──────────────
+function mkM(id,p1=null,p2=null){return{id,p1,p2,s1:null,s2:null,winner:null,loser:null,done:false,nextWin:null,nextLose:null};}
+
+function buildRoutingTable(size) {
+  const routes={};
+  if (size===4){
+    routes['W_R1_M0']={win:{b:'W',r:1,m:0,s:1},lose:{b:'L',r:0,m:0,s:1}};
+    routes['W_R1_M1']={win:{b:'W',r:1,m:0,s:2},lose:{b:'L',r:0,m:0,s:2}};
+    routes['W_R2_M0']={win:{b:'GF',s:1},lose:{b:'L',r:1,m:0,s:2}};
+    routes['L_R1_M0']={win:{b:'L',r:1,m:0,s:1},lose:null};
+    routes['L_R2_M0']={win:{b:'GF',s:2},lose:null};
+    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
+    routes['GFR']={win:null,lose:null};
+  } else if (size===8){
+    routes['W_R1_M0']={win:{b:'W',r:1,m:0,s:1},lose:{b:'L',r:0,m:0,s:1}};
+    routes['W_R1_M1']={win:{b:'W',r:1,m:0,s:2},lose:{b:'L',r:0,m:0,s:2}};
+    routes['W_R1_M2']={win:{b:'W',r:1,m:1,s:1},lose:{b:'L',r:0,m:1,s:1}};
+    routes['W_R1_M3']={win:{b:'W',r:1,m:1,s:2},lose:{b:'L',r:0,m:1,s:2}};
+    routes['W_R2_M0']={win:{b:'W',r:2,m:0,s:1},lose:{b:'L',r:1,m:0,s:2}};
+    routes['W_R2_M1']={win:{b:'W',r:2,m:0,s:2},lose:{b:'L',r:1,m:1,s:2}};
+    routes['W_R3_M0']={win:{b:'GF',s:1},lose:{b:'L',r:3,m:0,s:2}};
+    routes['L_R1_M0']={win:{b:'L',r:1,m:0,s:1},lose:null};
+    routes['L_R1_M1']={win:{b:'L',r:1,m:1,s:1},lose:null};
+    routes['L_R2_M0']={win:{b:'L',r:2,m:0,s:1},lose:null};
+    routes['L_R2_M1']={win:{b:'L',r:2,m:0,s:2},lose:null};
+    routes['L_R3_M0']={win:{b:'L',r:3,m:0,s:1},lose:null};
+    routes['L_R4_M0']={win:{b:'GF',s:2},lose:null};
+    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
+    routes['GFR']={win:null,lose:null};
+  } else if (size===16){
+    for(let i=0;i<8;i++)routes[`W_R1_M${i}`]={win:{b:'W',r:1,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:0,m:Math.floor(i/2),s:(i%2===0?1:2)}};
+    for(let i=0;i<4;i++)routes[`W_R2_M${i}`]={win:{b:'W',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:1,m:i,s:2}};
+    for(let i=0;i<2;i++)routes[`W_R3_M${i}`]={win:{b:'W',r:3,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:3,m:i,s:2}};
+    routes['W_R4_M0']={win:{b:'GF',s:1},lose:{b:'L',r:5,m:0,s:2}};
+    for(let i=0;i<4;i++)routes[`L_R1_M${i}`]={win:{b:'L',r:1,m:i,s:1},lose:null};
+    for(let i=0;i<4;i++)routes[`L_R2_M${i}`]={win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
+    for(let i=0;i<2;i++)routes[`L_R3_M${i}`]={win:{b:'L',r:3,m:i,s:1},lose:null};
+    for(let i=0;i<2;i++)routes[`L_R4_M${i}`]={win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
+    routes['L_R4_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
+    routes['L_R5_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
+    routes['L_R6_M0']={win:{b:'GF',s:2},lose:null};
+    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
+    routes['GFR']={win:null,lose:null};
+  } else if (size===32){
+    for(let i=0;i<16;i++)routes[`W_R1_M${i}`]={win:{b:'W',r:1,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:0,m:Math.floor(i/2),s:(i%2===0?1:2)}};
+    for(let i=0;i<8;i++)routes[`W_R2_M${i}`]={win:{b:'W',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:1,m:i,s:2}};
+    for(let i=0;i<4;i++)routes[`W_R3_M${i}`]={win:{b:'W',r:3,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:3,m:i,s:2}};
+    for(let i=0;i<2;i++)routes[`W_R4_M${i}`]={win:{b:'W',r:4,m:0,s:(i===0?1:2)},lose:{b:'L',r:5,m:i,s:2}};
+    routes['W_R5_M0']={win:{b:'GF',s:1},lose:{b:'L',r:7,m:0,s:2}};
+    for(let i=0;i<8;i++)routes[`L_R1_M${i}`]={win:{b:'L',r:1,m:i,s:1},lose:null};
+    for(let i=0;i<8;i++)routes[`L_R2_M${i}`]={win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
+    for(let i=0;i<4;i++)routes[`L_R3_M${i}`]={win:{b:'L',r:3,m:i,s:1},lose:null};
+    for(let i=0;i<4;i++)routes[`L_R4_M${i}`]={win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
+    for(let i=0;i<2;i++)routes[`L_R5_M${i}`]={win:{b:'L',r:5,m:i,s:1},lose:null};
+    for(let i=0;i<2;i++)routes[`L_R6_M${i}`]={win:{b:'L',r:6,m:0,s:(i===0?1:2)},lose:null};
+    routes['L_R7_M0']={win:{b:'L',r:7,m:0,s:1},lose:null};
+    routes['L_R8_M0']={win:{b:'GF',s:2},lose:null};
+    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
+    routes['GFR']={win:null,lose:null};
+  }
+  return routes;
+}
+
+function genBracket(t){const players=[...t.seed],size=nextPow2(players.length);const routes=buildRoutingTable(size);t._routes=routes;t._size=size;t.wB=[];let r0=[];for(let i=0;i<size;i+=2){const id=`W_R1_M${i/2}`;const m=mkM(id,players[i],players[i+1]);applyRoutes(m,routes);r0.push(m);}t.wB.push(r0);let cur=r0.length,wr=2;while(cur>1){cur=Math.ceil(cur/2);const round=[];for(let i=0;i<cur;i++){const id=`W_R${wr}_M${i}`;const m=mkM(id);applyRoutes(m,routes);round.push(m);}t.wB.push(round);wr++;}t.lB=buildLStructure(size,routes);t.gf=mkM('GF');applyRoutes(t.gf,routes);t.gfr=mkM('GFR');applyRoutes(t.gfr,routes);}
+function applyRoutes(m,routes){const r=routes[m.id];if(!r)return;m.nextWin=r.win||null;m.nextLose=r.lose||null;}
+function buildLStructure(size,routes){const lRounds=[];let r=0;while(true){const ids=Object.keys(routes).filter(k=>k.startsWith(`L_R${r+1}_`));if(!ids.length)break;const round=ids.sort((a,b)=>parseInt(a.split('_M')[1])-parseInt(b.split('_M')[1])).map(id=>{const m=mkM(id);applyRoutes(m,routes);return m;});lRounds.push(round);r++;}return lRounds;}
+function replayAll(t){const results=collectResults(t);genBracket(t);for(const res of results){const m=findM(t,res.id);if(!m)continue;m.s1=res.s1;m.s2=res.s2;if(m.p1===BYE||m.p2===BYE){m.winner=m.p1===BYE?m.p2:m.p1;m.loser=BYE;m.done=true;}else{m.done=true;m.winner=res.s1>res.s2?(m.p1||res.p1):(m.p2||res.p2);m.loser=res.s1>res.s2?(m.p2||res.p2):(m.p1||res.p1);if(!m.winner)m.winner=res.winner;if(!m.loser)m.loser=res.loser;}propagate(t,m);}resolveByesReplay(t);}
+function collectResults(t){return allMatches(t).filter(m=>m.done&&(m.winner||m.p1===BYE||m.p2===BYE)).map(m=>({id:m.id,s1:m.s1,s2:m.s2,winner:m.winner,loser:m.loser,p1:m.p1,p2:m.p2}));}
+function resolveByesReplay(t){let changed=true;while(changed){changed=false;for(const m of allMatches(t)){if(m.done)continue;if(m.p1===BYE&&m.p2===BYE){m.done=true;continue;}if(m.p1===BYE||m.p2===BYE){m.winner=m.p1===BYE?m.p2:m.p1;m.loser=null;m.done=true;propagate(t,m);changed=true;}}}}
+function propagate(t,m){if(m.winner)placeInSlot(t,m.nextWin,m.winner);if(m.loser)placeInSlot(t,m.nextLose,m.loser);}
+function placeInSlot(t,ref,player){if(!ref||!player)return;const m=getMatchByRef(t,ref);if(!m)return;if(ref.s===1)m.p1=player;else m.p2=player;}
+function getMatchByRef(t,ref){if(!ref)return null;if(ref.b==='GF')return t.gf;if(ref.b==='GFR')return t.gfr;if(ref.b==='W')return t.wB[ref.r]?.[ref.m]||null;if(ref.b==='L')return t.lB[ref.r]?.[ref.m]||null;return null;}
+function allMatches(t){return[...(t.wB||[]).flat(),...(t.lB||[]).flat(),t.gf,t.gfr].filter(Boolean);}
+function findM(t,id){if(!id)return null;if(id==='GF')return t.gf;if(id==='GFR')return t.gfr;for(const r of t.wB)for(const m of r)if(m.id===id)return m;for(const r of t.lB)for(const m of r)if(m.id===id)return m;return null;}
+function nextPow2(n){let x=1;while(x<n)x*=2;return x;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function getChamp(t){if(!t.gf||!t.gf.done)return null;if(t.gf.winner===t.gf.p1)return t.gf.winner;if(t.gfr&&t.gfr.done)return t.gfr.winner;return null;}
+
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
 
 init();
 </script>
