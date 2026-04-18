@@ -178,7 +178,7 @@
 <div class="section">
   <div class="section-label">AUTO-ROTACIJA</div>
   <div class="auto-row">
-    <div><div class="auto-lbl">AUTOMATSKA IZMENA</div><div class="auto-sub">Menja scenu na svakih 60 sekundi</div></div>
+    <div><div class="auto-lbl">AUTOMATSKA IZMENA</div><div class="auto-sub">Menja scenu na svakih 30s (Žreb → Repasaž → Raspored)</div></div>
     <label class="toggle"><input type="checkbox" id="autoToggle" onchange="toggleAuto()"><span class="toggle-slider"></span></label>
   </div>
   <div class="progress-wrap" id="progressWrap">
@@ -293,7 +293,7 @@ function normalizeScene(s) {
   if (s==='losers-early'||s==='losers-late') return 'losers';
   return s;
 }
-const AUTO_INTERVAL = 60;
+const AUTO_INTERVAL = 30;
 
 let db = [];
 let sceneState = { tournament_id: null, scene: 'winners', auto_rotate: false };
@@ -404,7 +404,11 @@ async function setScene(scene) {
   if (sceneState.auto_rotate) resetAutoTimer();
 }
 
-function nextScene() { const i=SCENES.indexOf(sceneState.scene); setScene(SCENES[(i+1)%SCENES.length]); }
+function nextScene(autoOnly=false) {
+  const pool = autoOnly ? SCENES.filter(s => s !== 'finale') : SCENES;
+  const i = pool.indexOf(sceneState.scene);
+  setScene(pool[(i+1) % pool.length]);
+}
 function prevScene() { const i=SCENES.indexOf(sceneState.scene); setScene(SCENES[(i-1+SCENES.length)%SCENES.length]); }
 
 async function toggleAuto() {
@@ -439,7 +443,7 @@ function startAutoTimer() {
   autoTimer = setInterval(() => {
     autoSeconds--;
     updateProgressBar();
-    if (autoSeconds <= 0) { nextScene(); autoSeconds = AUTO_INTERVAL; }
+    if (autoSeconds <= 0) { nextScene(true); autoSeconds = AUTO_INTERVAL; }
   }, 1000);
 }
 function stopAutoTimer() {

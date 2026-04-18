@@ -30,7 +30,7 @@
     --gold:    #C4873A;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow:hidden;}
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     background:radial-gradient(ellipse at 20% 50%,rgba(43,96,232,0.06) 0%,transparent 60%),
                radial-gradient(ellipse at 80% 20%,rgba(196,135,58,0.04) 0%,transparent 50%);}
@@ -72,15 +72,15 @@
   .champ-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:2.2rem;letter-spacing:0.08em;}
 
   /* SCHEDULE SCENE */
-  .sched-wrap{display:flex;gap:32px;justify-content:center;align-items:flex-start;padding:32px;height:calc(100vh - 60px);box-sizing:border-box;}
-  .sched-box{flex:1;max-width:520px;border:1px solid var(--border);background:var(--card);padding:24px 28px;}
-  .sched-box-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.85rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border);}
-  .sched-match{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(60,53,96,0.4);}
+  .sched-wrap{display:flex;gap:48px;justify-content:center;align-items:center;padding:40px;height:calc(100vh - 60px);box-sizing:border-box;}
+  .sched-box{flex:1;max-width:720px;border:1px solid var(--border);background:var(--card);padding:40px 48px;}
+  .sched-box-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.3rem;letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+  .sched-match{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid rgba(60,53,96,0.4);}
   .sched-match:last-child{border-bottom:none;}
-  .sched-match-id{font-size:0.55rem;color:var(--muted);min-width:60px;font-family:'DM Mono',monospace;}
-  .sched-match-p{flex:1;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .sched-match-vs{font-size:0.65rem;color:var(--muted);padding:0 4px;flex-shrink:0;}
-  .sched-empty{color:var(--muted);font-style:italic;font-size:0.8rem;padding:8px 0;}
+  .sched-match-id{font-size:0.75rem;color:var(--muted);min-width:80px;font-family:'DM Mono',monospace;}
+  .sched-match-p{flex:1;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.6rem;letter-spacing:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sched-match-vs{font-size:0.9rem;color:var(--muted);padding:0 8px;flex-shrink:0;}
+  .sched-empty{color:var(--muted);font-style:italic;font-size:1.1rem;padding:14px 0;}
 
   /* WAITING SCREEN */
   .waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;position:relative;z-index:1;}
