@@ -8,14 +8,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
   :root { --bg:#09090E; --surface:#12131F; --card:#1A1C2E; --border:#3C3560; --accent:#2B60E8; --accent2:#C4873A; --text:#F0EDE6; --muted:#6B7280; --gold:#C4873A; }
+  :root[data-theme="light"] { --bg:#F0EDE6; --surface:#E4E1D9; --card:#D8D4CC; --border:#C4BFB5; --accent:#2B60E8; --accent2:#C4873A; --text:#09090E; --muted:#6B6560; --gold:#C4873A; }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:20px 16px 60px;}
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(43,96,232,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(196,135,58,0.04) 0%,transparent 50%);}
+  [data-theme="light"] body::before{background:radial-gradient(ellipse at 20% 30%,rgba(43,96,232,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(196,135,58,0.06) 0%,transparent 50%);}
 
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;position:relative;z-index:1;}
   .logo{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.4rem;letter-spacing:3px;color:var(--accent);}
   .logo span{color:var(--text);}
+  .header-right{display:flex;align-items:center;gap:10px;}
   .live-row{display:flex;align-items:center;gap:6px;}
+  .theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;}
+  .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
   .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all 0.3s;}
   .status-dot.live{background:var(--accent);box-shadow:0 0 8px var(--accent);}
   .status-txt{font-size:0.62rem;letter-spacing:1px;color:var(--muted);}
@@ -128,9 +133,12 @@
 
 <div class="header">
   <div class="logo">🎯 TARGET <span>CTRL</span></div>
-  <div class="live-row">
-    <span class="status-dot" id="statusDot"></span>
-    <span class="status-txt" id="statusTxt">CONNECTING...</span>
+  <div class="header-right">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Prebaci temu">☀️</button>
+    <div class="live-row">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-txt" id="statusTxt">CONNECTING...</span>
+    </div>
   </div>
 </div>
 
@@ -254,6 +262,23 @@
 </div>
 
 <script>
+async function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('ctrl-theme', next);
+  await sb.from('scene_state').update({ theme: next }).eq('id', 1);
+}
+(function() {
+  const saved = localStorage.getItem('ctrl-theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = saved === 'light' ? '🌙' : '☀️';
+  }
+})();
+
 const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -288,7 +313,16 @@ async function init() {
   db.forEach(t => { t._routes = buildRoutingTable(nextPow2(t.seed.length)); });
 
   const { data: sData } = await sb.from('scene_state').select('*').eq('id',1).single();
-  if (sData) { sceneState = sData; sceneState.scene = normalizeScene(sceneState.scene); activeTid = sData.tournament_id; }
+  if (sData) {
+    sceneState = sData;
+    sceneState.scene = normalizeScene(sceneState.scene);
+    activeTid = sData.tournament_id;
+    if (sData.theme) {
+      document.documentElement.setAttribute('data-theme', sData.theme);
+      document.getElementById('themeBtn').textContent = sData.theme === 'light' ? '🌙' : '☀️';
+      localStorage.setItem('ctrl-theme', sData.theme);
+    }
+  }
 
   renderTournaments();
   updateSceneButtons(getT());

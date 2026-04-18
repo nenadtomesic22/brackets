@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TARGET SOMBOR — Brand Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ─── TOKENS ─────────────────────────────────── */
+  :root {
+    --bg:        #09090E;
+    --surface:   #12131F;
+    --surface-2: #1A1C2E;
+    --accent:    #2B60E8;
+    --accent-hi: #4B7BFF;
+    --accent-lo: #1A3FA0;
+    --warm:      #C4873A;
+    --warm-hi:   #DFA04A;
+    --warm-lo:   #8A5E28;
+    --purple:    #3C3560;
+    --text:      #F0EDE6;
+    --text-dim:  #A09C94;
+    --text-mute: #4A4740;
+    --border:    rgba(240,237,230,0.08);
+    --border-hi: rgba(240,237,230,0.18);
+
+    --f-display: 'Stardos Stencil', serif;
+    --f-body:    'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ─── LAYOUT ─────────────────────────────────── */
+  .page { max-width: 1080px; margin: 0 auto; padding: 0 40px 120px; }
+
+  section { margin-top: 100px; }
+
+  .label {
+    font-family: var(--f-body);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 40px;
+    letter-spacing: 0.04em;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 80px 0 0;
+  }
+
+  /* ─── COVER ──────────────────────────────────── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43,96,232,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; left: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,135,58,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cover-meta {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .cover-logo {
+    font-family: var(--f-display);
+    font-size: clamp(5rem, 14vw, 11rem);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 0.9;
+    color: var(--text);
+    position: relative;
+  }
+  .cover-logo .rule {
+    display: block;
+    width: 80px; height: 4px;
+    background: var(--accent);
+    margin: 32px 0 28px;
+  }
+  .cover-sub {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    color: var(--text-dim);
+    max-width: 420px;
+    position: relative;
+  }
+  .cover-version {
+    position: absolute;
+    bottom: 40px; right: 40px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-mute);
+  }
+
+  /* ─── TOC ────────────────────────────────────── */
+  .toc {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .toc-item {
+    background: var(--surface);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: background 0.2s;
+  }
+  .toc-item:hover { background: var(--surface-2); }
+  .toc-num {
+    font-family: var(--f-display);
+    font-size: 1.6rem;
+    color: var(--accent);
+    min-width: 40px;
+    opacity: 0.5;
+  }
+  .toc-title { font-size: 0.85rem; font-weight: 500; }
+  .toc-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+  /* ─── LOGO ───────────────────────────────────── */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .logo-cell {
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .logo-cell .logo-specimen {
+    font-family: var(--f-display);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+  }
+  .logo-cell-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .bg-dark  { background: var(--bg); }
+  .bg-surf  { background: var(--surface); }
+  .bg-blue  { background: var(--accent); }
+  .bg-white { background: var(--text); }
+  .on-blue  { color: var(--text); }
+  .on-white { color: var(--bg); }
+
+  .logo-dont-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .logo-dont-cell {
+    background: var(--surface);
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+  }
+  .dont-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: #B91C1C;
+    color: white;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 3px 8px;
+  }
+  .logo-dont-cell .dont-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .dont-ex-1 { font-family: var(--f-body); font-weight: 700; font-size: 2rem; letter-spacing: 0.1em; color: var(--text); }
+  .dont-ex-2 { font-family: var(--f-display); font-weight: 700; font-size: 1.6rem; letter-spacing: 0.1em; color: #C8102E; filter: drop-shadow(0 0 12px #C8102E); }
+  .dont-ex-3 { font-family: var(--f-display); font-weight: 700; font-size: 1.8rem; letter-spacing: 0.1em; color: var(--text); text-transform: lowercase; }
+
+  /* ─── COLORS ─────────────────────────────────── */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .swatch {
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+    position: relative;
+  }
+  .swatch-name {
+    font-family: var(--f-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .swatch-hex {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    opacity: 0.7;
+  }
+  .swatch-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.55;
+    margin-top: 2px;
+  }
+  .sw-bg     { background: #09090E; color: var(--text); border: 1px solid var(--border-hi); }
+  .sw-surf   { background: #12131F; color: var(--text); }
+  .sw-surf2  { background: #1A1C2E; color: var(--text); }
+  .sw-accent { background: #2B60E8; color: #fff; }
+  .sw-warm   { background: #C4873A; color: #fff; }
+  .sw-purple { background: #3C3560; color: var(--text); }
+
+  .color-usage {
+    margin-top: 24px;
+    background: var(--surface);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .color-rule {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .color-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .color-rule p { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+  .color-rule strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 4px; }
+
+  /* ─── TYPOGRAPHY ─────────────────────────────── */
+  .type-specimen-display {
+    background: var(--surface);
+    padding: 48px;
+    margin-bottom: 2px;
+  }
+  .type-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  .ts-h1 { font-family: var(--f-display); font-size: clamp(3rem, 7vw, 6rem); font-weight: 700; line-height: 0.95; letter-spacing: 0.05em; }
+  .ts-h2 { font-family: var(--f-display); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700; letter-spacing: 0.06em; }
+  .ts-h3 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 700; letter-spacing: 0.06em; }
+
+  .type-specimen-body {
+    background: var(--surface);
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  .ts-body-l  { font-family: var(--f-body); font-size: 1.1rem; font-weight: 400; line-height: 1.75; color: var(--text-dim); }
+  .ts-body    { font-family: var(--f-body); font-size: 0.9rem; font-weight: 400; line-height: 1.7; color: var(--text-dim); }
+  .ts-label   { font-family: var(--f-body); font-size: 10px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); }
+  .ts-mono    { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--warm); letter-spacing: 0.05em; }
+
+  .type-scale {
+    background: var(--surface);
+    padding: 40px 48px;
+    margin-top: 2px;
+    display: grid;
+    gap: 20px;
+  }
+  .scale-row {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+  }
+  .scale-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .scale-meta { min-width: 160px; }
+  .scale-name { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-mute); }
+  .scale-size { font-size: 11px; color: var(--accent); margin-top: 2px; }
+
+  /* ─── COMPONENTS ─────────────────────────────── */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .comp-cell {
+    background: var(--surface);
+    padding: 40px;
+  }
+  .comp-cell-title {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 28px;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    font-family: var(--f-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 13px 28px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hi); }
+  .btn-warm { background: var(--warm); color: #fff; }
+  .btn-warm:hover { background: var(--warm-hi); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border-hi); }
+  .btn-outline:hover { border-color: var(--text); }
+  .btn-ghost { background: transparent; color: var(--accent); }
+  .btn-ghost:hover { color: var(--accent-hi); }
+
+  /* Badges */
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid;
+  }
+  .badge-blue  { border-color: var(--accent); color: var(--accent); background: rgba(43,96,232,0.1); }
+  .badge-warm  { border-color: var(--warm); color: var(--warm); background: rgba(196,135,58,0.1); }
+  .badge-green { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.1); }
+  .badge-red   { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.1); }
+
+  /* Cards */
+  .card-demo {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .card-demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .card-demo-title { font-family: var(--f-display); font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em; }
+  .card-demo-meta  { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+  .card-demo-stat  { font-family: var(--f-display); font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .card-demo-body  { font-size: 0.82rem; color: var(--text-dim); line-height: 1.65; }
+
+  /* Score display */
+  .score-demo {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+  .player-row { display: flex; align-items: center; gap: 12px; }
+  .player-name { font-family: var(--f-display); font-size: 1.1rem; font-weight: 700; letter-spacing: 0.05em; }
+  .player-score { font-family: var(--f-display); font-size: 2.5rem; font-weight: 700; color: var(--accent); }
+  .vs-badge {
+    font-family: var(--f-display);
+    font-size: 0.8rem;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+  }
+
+  /* Inputs */
+  .input-row { display: flex; flex-direction: column; gap: 12px; }
+  .input-demo {
+    background: var(--bg);
+    border: 1px solid var(--border-hi);
+    color: var(--text);
+    font-family: var(--f-body);
+    font-size: 0.85rem;
+    padding: 12px 16px;
+    outline: none;
+    width: 100%;
+  }
+  .input-demo:focus { border-color: var(--accent); }
+  .input-demo::placeholder { color: var(--text-mute); }
+  .input-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  /* Stat bar */
+  .stat-bars { display: flex; flex-direction: column; gap: 14px; }
+  .stat-bar-row { display: flex; align-items: center; gap: 14px; }
+  .stat-bar-name { font-size: 0.78rem; color: var(--text-dim); min-width: 90px; }
+  .stat-bar-track { flex: 1; height: 4px; background: var(--border); position: relative; }
+  .stat-bar-fill { height: 100%; background: var(--accent); }
+  .stat-bar-fill.warm { background: var(--warm); }
+  .stat-bar-val { font-family: var(--f-display); font-size: 0.9rem; font-weight: 700; min-width: 40px; text-align: right; }
+
+  /* ─── PATTERNS ───────────────────────────────── */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+  }
+  .pattern-cell {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pattern-label {
+    position: absolute;
+    bottom: 12px; left: 14px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  /* Gradient glow — Blue */
+  .pat-1 {
+    background: var(--bg);
+  }
+  .pat-1::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43,96,232,0.35) 0%, transparent 70%);
+  }
+  /* Gradient glow — Warm */
+  .pat-2 {
+    background: var(--bg);
+  }
+  .pat-2::before {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,135,58,0.3) 0%, transparent 70%);
+  }
+  /* Dark surface + border */
+  .pat-3 {
+    background: var(--surface);
+    border: 1px solid var(--border-hi);
+  }
+  .pat-3::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* ─── SPACING ────────────────────────────────── */
+  .spacing-demo {
+    background: var(--surface);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .spacing-block {
+    background: rgba(43,96,232,0.3);
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .spacing-info { font-size: 11px; color: var(--text-dim); }
+  .spacing-info strong { color: var(--text); font-weight: 500; }
+
+  /* ─── FOOTER NOTE ────────────────────────────── */
+  .book-footer {
+    margin-top: 120px;
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .book-footer .f-logo {
+    font-family: var(--f-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text);
+  }
+  .book-footer p {
+    font-size: 11px;
+    color: var(--text-mute);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ─── PRINT MOCKUP ───────────────────────────── */
+  .print-mockup {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    aspect-ratio: 2/3;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .print-mockup::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 250px; height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(43,96,232,0.2) 0%, transparent 70%);
+  }
+  .pm-top-line { width: 40px; height: 2px; background: var(--accent); margin-bottom: 20px; }
+  .pm-badge { font-size: 8px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .pm-title { font-family: var(--f-display); font-size: 2rem; font-weight: 700; letter-spacing: 0.06em; line-height: 1; margin-bottom: 6px; }
+  .pm-subtitle { font-family: var(--f-display); font-size: 1rem; font-weight: 700; letter-spacing: 0.08em; color: var(--warm); }
+  .pm-divider { width: 100%; height: 1px; background: var(--border); margin: 16px 0; }
+  .pm-info { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+  .pm-amount { font-family: var(--f-display); font-size: 1.6rem; font-weight: 700; color: var(--warm); }
+  .pm-footer { margin-top: auto; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-mute); }
+
+  /* responsive */
+  @media (max-width: 700px) {
+    .page { padding: 0 20px 80px; }
+    .toc, .logo-grid, .swatch-grid, .comp-grid,
+    .logo-dont-grid, .pattern-grid { grid-template-columns: 1fr; }
+    .type-specimen-body { grid-template-columns: 1fr; }
+    .color-usage { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     COVER
+════════════════════════════════════════════════ -->
+<div class="cover page">
+  <div class="cover-meta">Bife Target Sombor — Brand Identity System — v1.0</div>
+  <div class="cover-logo">
+    TARGET<br>SOMBOR
+    <span class="rule"></span>
+  </div>
+  <p class="cover-sub">Ovaj dokument definiše vizuelni identitet brenda. Logo, paleta, tipografija i UI komponente — referenca za sve buduće materijale.</p>
+  <div class="cover-version">2026 · Verzija 1.0</div>
+</div>
+
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════
+     TABLE OF CONTENTS
+════════════════════════════════════════════════ -->
+<section>
+  <div class="label">Sadržaj</div>
+  <div class="toc">
+    <div class="toc-item">
+      <span class="toc-num">01</span>
+      <div><div class="toc-title">Logo</div><div class="toc-sub">Upotreba, veličine, zabrane</div></div>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">02</span>
+      <div><div class="toc-title">Paleta boja</div><div class="toc-sub">6 tokena, pravila upotrebe</div></div>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">03</span>
+      <div><div class="toc-title">Tipografija</div><div class="toc-sub">Stardos Stencil + DM Sans</div></div>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">04</span>
+      <div><div class="toc-title">UI Komponente</div><div class="toc-sub">Dugmad, kartice, statistike</div></div>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">05</span>
+      <div><div class="toc-title">Pozadinski patereni</div><div class="toc-sub">Glow efekti, površine</div></div>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">06</span>
+      <div><div class="toc-title">Print primer</div><div class="toc-sub">Šablon za turnirski plakat</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     01 · LOGO
+════════════════════════════════════════════════ -->
+<section id="logo">
+  <div class="label">01 — Logo</div>
+  <h2>TARGET</h2>
+
+  <div class="logo-grid">
+    <!-- Primary — dark bg -->
+    <div class="logo-cell bg-dark" style="border: 1px solid var(--border-hi);">
+      <div class="logo-specimen" style="color: var(--text);">TARGET</div>
+      <div class="logo-cell-label">✓ Primarna verzija — tamna podloga</div>
+    </div>
+    <!-- On surface -->
+    <div class="logo-cell bg-surf">
+      <div class="logo-specimen" style="color: var(--text);">TARGET</div>
+      <div class="logo-cell-label">✓ Na surface podlozi</div>
+    </div>
+    <!-- On blue accent -->
+    <div class="logo-cell bg-blue">
+      <div class="logo-specimen on-blue">TARGET</div>
+      <div class="logo-cell-label">✓ Na primarnom akcentu (plava)</div>
+    </div>
+    <!-- On white/light -->
+    <div class="logo-cell bg-white">
+      <div class="logo-specimen on-white">TARGET</div>
+      <div class="logo-cell-label">✓ Na svetloj podlozi (print)</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 40px;">
+    <div class="label" style="color: var(--text-mute);">Zabranjene upotrebe</div>
+    <div class="logo-dont-grid">
+      <div class="logo-dont-cell">
+        <div class="dont-badge">✗ ZABRANJENO</div>
+        <div class="dont-ex-1">TARGET</div>
+        <div class="dont-label">Drugi font — logo je isključivo Stardos Stencil Bold</div>
+      </div>
+      <div class="logo-dont-cell">
+        <div class="dont-badge">✗ ZABRANJENO</div>
+        <div class="dont-ex-2">TARGET</div>
+        <div class="dont-label">Glow / neon efekti — devalvuju ozbiljnost</div>
+      </div>
+      <div class="logo-dont-cell">
+        <div class="dont-badge">✗ ZABRANJENO</div>
+        <div class="dont-ex-3">target</div>
+        <div class="dont-label">Lowercase — logo je uvek all-caps</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px; background: var(--surface); padding: 24px 28px;">
+    <p style="font-size: 0.82rem; color: var(--text-dim); line-height: 1.8;">
+      <strong style="color: var(--text); display: block; margin-bottom: 8px;">Minimalna veličina</strong>
+      Digitalno: 80px širine minimum. Print: 20mm minimum. Ispod ovih granica stencil rezovi postaju nečitljivi.
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     02 · COLORS
+════════════════════════════════════════════════ -->
+<section id="colors">
+  <div class="label">02 — Paleta boja</div>
+  <h2>6 TOKENA</h2>
+
+  <div class="swatch-grid">
+    <div class="swatch sw-bg">
+      <div class="swatch-name">Background</div>
+      <div class="swatch-hex">#09090E</div>
+      <div class="swatch-role">Primarna pozadina</div>
+    </div>
+    <div class="swatch sw-surf">
+      <div class="swatch-name">Surface</div>
+      <div class="swatch-hex">#12131F</div>
+      <div class="swatch-role">Kartice, paneli</div>
+    </div>
+    <div class="swatch sw-surf2">
+      <div class="swatch-name">Surface 2</div>
+      <div class="swatch-hex">#1A1C2E</div>
+      <div class="swatch-role">Hover stanja, uvučeni sadržaj</div>
+    </div>
+    <div class="swatch sw-accent">
+      <div class="swatch-name">Akcent</div>
+      <div class="swatch-hex">#2B60E8</div>
+      <div class="swatch-role">Interaktivni elementi, LED plava</div>
+    </div>
+    <div class="swatch sw-warm">
+      <div class="swatch-name">Topla</div>
+      <div class="swatch-hex">#C4873A</div>
+      <div class="swatch-role">Nagrade, drvo bara, sekundarni CTA</div>
+    </div>
+    <div class="swatch sw-purple">
+      <div class="swatch-name">Ljubičasta</div>
+      <div class="swatch-hex">#3C3560</div>
+      <div class="swatch-role">Zidovi lokala, borderi, diskretne površine</div>
+    </div>
+  </div>
+
+  <div class="color-usage">
+    <div class="color-rule">
+      <div class="color-dot" style="background:#2B60E8;"></div>
+      <div>
+        <strong>Elektroplava #2B60E8 — primarni akcent</strong>
+        Dugmad za akciju, aktivni linkovi, live indikatori, progres barovi. Direktno inspirisana LED osvetljenjem lokala.
+      </div>
+    </div>
+    <div class="color-rule">
+      <div class="color-dot" style="background:#C4873A;"></div>
+      <div>
+        <strong>Amber/drvo #C4873A — topli sekundarni</strong>
+        Nagrade, pobednik turnira, zlatne oznake, "warm" CTA dugmad. Inspirisana bar pultom od drveta.
+      </div>
+    </div>
+    <div class="color-rule">
+      <div class="color-dot" style="background:#3C3560;"></div>
+      <div>
+        <strong>Ljubičasta #3C3560 — ambijentalna</strong>
+        Nikad kao tekst boja — isključivo za bordere, pozadine sekcija i suptilne razdelnike.
+      </div>
+    </div>
+    <div class="color-rule">
+      <div class="color-dot" style="background:#F0EDE6;"></div>
+      <div>
+        <strong>Topla bela #F0EDE6 — tekst</strong>
+        Čisto bela se ne koristi — uvek topla bela. Daje "parchment" karakter pub okruženja.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     03 · TYPOGRAPHY
+════════════════════════════════════════════════ -->
+<section id="typography">
+  <div class="label">03 — Tipografija</div>
+  <h2>DVA FONTA</h2>
+
+  <div class="type-specimen-display">
+    <div class="type-label-row">
+      <span>Stardos Stencil Bold — Display</span>
+      <span>Google Fonts · weight 700</span>
+    </div>
+    <div class="ts-h1">PIKADO<br>TURNIR</div>
+  </div>
+
+  <div class="type-specimen-body">
+    <div>
+      <div class="type-label-row" style="margin-bottom: 16px;"><span>Headings — Stardos Stencil Bold</span></div>
+      <div class="ts-h2" style="margin-bottom: 16px;">BIFE TARGET</div>
+      <div class="ts-h3" style="margin-bottom: 16px;">SOMBOR 2026</div>
+    </div>
+    <div>
+      <div class="type-label-row" style="margin-bottom: 16px;"><span>Body & UI — DM Sans</span></div>
+      <div class="ts-label" style="margin-bottom: 8px;">Kategorija — turnir</div>
+      <div class="ts-body-l" style="margin-bottom: 12px;">Kompetitivni dart sa tradicijom.</div>
+      <div class="ts-body">Turniri se održavaju svake poslednje subote u mesecu. Kotizacija: 500 RSD po igraču.</div>
+    </div>
+  </div>
+
+  <div class="type-scale">
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">Display / Hero</div>
+        <div class="scale-size">clamp(4rem → 8rem)</div>
+      </div>
+      <div style="font-family: var(--f-display); font-weight: 700; font-size: clamp(2.5rem, 5vw, 4.5rem); letter-spacing: 0.05em; line-height: 1;">TURNIR</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">H1 — Sekcija</div>
+        <div class="scale-size">clamp(2rem → 3.5rem)</div>
+      </div>
+      <div style="font-family: var(--f-display); font-weight: 700; font-size: clamp(1.8rem, 3.5vw, 2.8rem); letter-spacing: 0.06em;">REZULTATI KOLA</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">H2 — Kartica</div>
+        <div class="scale-size">1.5rem</div>
+      </div>
+      <div style="font-family: var(--f-display); font-weight: 700; font-size: 1.5rem; letter-spacing: 0.06em;">ČETVRTFINALE</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">Label / Badge</div>
+        <div class="scale-size">10px · 0.25em spacing</div>
+      </div>
+      <div style="font-family: var(--f-body); font-size: 10px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent);">LIVE · TURNIR U TOKU</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">Body</div>
+        <div class="scale-size">0.9rem · 1.7 line-height</div>
+      </div>
+      <div class="ts-body">Prijavi se najkasnije sat vremena pre početka turnira. Rezervacija mesta obavezna.</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-meta">
+        <div class="scale-name">Stat / Score</div>
+        <div class="scale-size">DM Mono · mono</div>
+      </div>
+      <div class="ts-mono">AVG: 42.7 · FINISH: 78% · 180s: 3</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     04 · COMPONENTS
+════════════════════════════════════════════════ -->
+<section id="components">
+  <div class="label">04 — UI Komponente</div>
+  <h2>SISTEM ELEMENATA</h2>
+
+  <div class="comp-grid">
+
+    <!-- Buttons -->
+    <div class="comp-cell">
+      <div class="comp-cell-title">Dugmad</div>
+      <div class="btn-row">
+        <button class="btn btn-primary">Prijavi se</button>
+        <button class="btn btn-warm">Pobednik</button>
+      </div>
+      <div class="btn-row" style="margin-top: 12px;">
+        <button class="btn btn-outline">Raspored →</button>
+        <button class="btn btn-ghost">Detalji</button>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="comp-cell">
+      <div class="comp-cell-title">Oznake</div>
+      <div class="badge-row">
+        <span class="badge badge-blue">Live</span>
+        <span class="badge badge-warm">Pobednik</span>
+        <span class="badge badge-green">Aktivan</span>
+        <span class="badge badge-red">Diskvalifikovan</span>
+      </div>
+    </div>
+
+    <!-- Player card -->
+    <div class="comp-cell">
+      <div class="comp-cell-title">Kartica igrača</div>
+      <div class="card-demo">
+        <div class="card-demo-header">
+          <div>
+            <div class="card-demo-title">Marko J.</div>
+            <div class="card-demo-meta">Pro liga · Sezona 2026</div>
+          </div>
+          <div class="card-demo-stat">501</div>
+        </div>
+        <div class="stat-bars">
+          <div class="stat-bar-row">
+            <div class="stat-bar-name">Prosek</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width: 78%;"></div></div>
+            <div class="stat-bar-val" style="color: var(--accent);">42.7</div>
+          </div>
+          <div class="stat-bar-row">
+            <div class="stat-bar-name">Finish %</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill" style="width: 62%;"></div></div>
+            <div class="stat-bar-val" style="color: var(--accent);">62%</div>
+          </div>
+          <div class="stat-bar-row">
+            <div class="stat-bar-name">180s</div>
+            <div class="stat-bar-track"><div class="stat-bar-fill warm" style="width: 40%;"></div></div>
+            <div class="stat-bar-val" style="color: var(--warm);">7</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score display -->
+    <div class="comp-cell">
+      <div class="comp-cell-title">Prikaz rezultata</div>
+      <div class="score-demo">
+        <div>
+          <div class="player-name" style="color: var(--accent);">Marko J.</div>
+          <div style="font-size: 0.72rem; color: var(--text-dim);">Pobednik</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div class="player-score" style="color: var(--accent);">3</div>
+          <div class="vs-badge">VS</div>
+          <div class="player-score" style="color: var(--text-mute);">1</div>
+        </div>
+        <div>
+          <div class="player-name" style="text-align: right;">Stefan P.</div>
+          <div style="font-size: 0.72rem; color: var(--text-dim); text-align: right;">Eliminisan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form inputs -->
+    <div class="comp-cell">
+      <div class="comp-cell-title">Forme</div>
+      <div class="input-row">
+        <div>
+          <label class="input-label">Ime i prezime</label>
+          <input class="input-demo" type="text" placeholder="Marko Jovanović">
+        </div>
+        <div>
+          <label class="input-label">Kategorija</label>
+          <input class="input-demo" type="text" placeholder="Odaberi kategoriju...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation preview -->
+    <div class="comp-cell" style="padding: 0;">
+      <div style="background: rgba(9,9,14,0.97); border-bottom: 1px solid var(--purple); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-family: var(--f-display); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.1em;">TARGET</span>
+        <div style="display: flex; gap: 24px;">
+          <span style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); font-weight: 500;">O nama</span>
+          <span style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 500; border-bottom: 1px solid var(--accent); padding-bottom: 2px;">Turniri</span>
+          <span style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); font-weight: 500;">Meni</span>
+        </div>
+        <button class="btn btn-primary" style="padding: 8px 18px; font-size: 0.7rem;">Rezerviši</button>
+      </div>
+      <div style="padding: 20px 28px;">
+        <div class="comp-cell-title">Navigacija</div>
+        <p style="font-size: 0.78rem; color: var(--text-dim); line-height: 1.7;">Aktivan link u akcentu plavoj sa border-bottom. Ostatak u dim tekstu. Navbar uvek sa border-bottom u ljubičastoj.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     05 · PATTERNS
+════════════════════════════════════════════════ -->
+<section id="patterns">
+  <div class="label">05 — Pozadinski patereni</div>
+  <h2>ATMOSFERA</h2>
+  <p style="color: var(--text-dim); font-size: 0.88rem; margin-bottom: 36px; max-width: 540px; line-height: 1.75;">Tri osnovna paterna koja čuvaju "dark pub" atmosferu na svim materijalima. Nikad gradijenti u živim bojama — uvek suptilni glow koji imitira LED osvetljenje.</p>
+
+  <div class="pattern-grid">
+    <div class="pattern-cell pat-1">
+      <div style="font-family: var(--f-display); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.08em; position: relative; z-index: 1;">TARGET<br><span style="color: var(--accent);">SOMBOR</span></div>
+      <div class="pattern-label">Plavi glow — hero sekcije</div>
+    </div>
+    <div class="pattern-cell pat-2">
+      <div style="font-family: var(--f-display); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.08em; position: relative; z-index: 1;">POBEDNIK<br><span style="color: var(--warm);">2026</span></div>
+      <div class="pattern-label">Topli glow — nagrade</div>
+    </div>
+    <div class="pattern-cell pat-3">
+      <div style="font-family: var(--f-display); font-size: 1rem; font-weight: 700; letter-spacing: 0.08em; position: relative; z-index: 1;">STATISTIKA<br><span style="color: var(--text-dim); font-family: 'DM Sans'; font-size: 0.75rem; font-weight: 400;">Sezona 2026</span></div>
+      <div class="pattern-label">Surface + top border — kartice</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════
+     06 · PRINT PRIMER
+════════════════════════════════════════════════ -->
+<section id="print">
+  <div class="label">06 — Print primer</div>
+  <h2>PLAKAT ŠABLON</h2>
+  <p style="color: var(--text-dim); font-size: 0.88rem; margin-bottom: 36px; max-width: 540px; line-height: 1.75;">Minimalni proof-of-concept za mesečni turnirski plakat. Isti tokenima — preslikava se na fizičke materijale.</p>
+
+  <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+    <div class="print-mockup">
+      <div class="pm-top-line"></div>
+      <div class="pm-badge">Bife Target Sombor</div>
+      <div class="pm-title">PIKADO<br>TURNIR</div>
+      <div class="pm-subtitle">APRIL 2026</div>
+      <div class="pm-divider"></div>
+      <div class="pm-info">Datum</div>
+      <div style="font-family: var(--f-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 14px; letter-spacing: 0.05em;">26. APRIL · 18H</div>
+      <div class="pm-info">Nagradni fond</div>
+      <div class="pm-amount">15.000 RSD</div>
+      <div class="pm-divider"></div>
+      <div class="pm-info" style="margin-bottom: 4px;">Kotizacija</div>
+      <div style="font-family: var(--f-display); font-size: 0.9rem; font-weight: 700; color: var(--text-dim);">500 RSD</div>
+      <div class="pm-footer">instagram: @target.bife</div>
+    </div>
+
+    <div style="flex: 1; min-width: 240px;">
+      <div style="background: var(--surface); padding: 28px; margin-bottom: 2px;">
+        <div style="font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 16px;">Pravila za print materijale</div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: var(--accent); flex-shrink: 0; font-weight: 600;">✓</span>
+            Logo uvek all-caps Stardos Stencil Bold na vrhu
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: var(--accent); flex-shrink: 0; font-weight: 600;">✓</span>
+            Tamna pozadina — nikad svetla podloga za turnirske plakate
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: var(--accent); flex-shrink: 0; font-weight: 600;">✓</span>
+            Nagradni fond u toplom amberu (#C4873A) — vizuelno prioritetan
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: var(--accent); flex-shrink: 0; font-weight: 600;">✓</span>
+            Datum i vreme u Stardos Stencil Bold — čitljivo sa distance
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: #ef4444; flex-shrink: 0; font-weight: 600;">✗</span>
+            Bez clip-art slika, stokova, random ikonografije
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start; font-size: 0.82rem; color: var(--text-dim); line-height: 1.6;">
+            <span style="color: #ef4444; flex-shrink: 0; font-weight: 600;">✗</span>
+            Bez miksanja paleta — samo 6 definisanih tokena
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─────────────────────────────────── -->
+<div class="book-footer">
+  <div class="f-logo">TARGET</div>
+  <p>
+    Bife Target Sombor<br>
+    Brand Identity System v1.0 · 2026<br>
+    Fonts: Stardos Stencil + DM Sans (Google Fonts)
+  </p>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

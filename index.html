@@ -18,6 +18,17 @@
     --muted:   #6B7280;
     --gold:    #C4873A;
   }
+  :root[data-theme="light"] {
+    --bg:      #F0EDE6;
+    --surface: #E4E1D9;
+    --card:    #D8D4CC;
+    --border:  #C4BFB5;
+    --accent:  #2B60E8;
+    --accent2: #C4873A;
+    --text:    #09090E;
+    --muted:   #6B6560;
+    --gold:    #C4873A;
+  }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
   body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -183,6 +194,9 @@ function applySceneState(state) {
     replayAll(t);
     renderAllBrackets(t);
   }
+
+  if (state.theme) document.documentElement.setAttribute('data-theme', state.theme);
+  else document.documentElement.removeAttribute('data-theme');
 
   activeScene = state.scene;
   showScene(state.scene, t);
