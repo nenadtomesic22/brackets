@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Controller – Target Sombor</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Controller - Target Sombor</title>
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-  :root { --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830; --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700; }
+  :root { --bg:#09090E; --surface:#12131F; --card:#1A1C2E; --border:#3C3560; --accent:#2B60E8; --accent2:#C4873A; --text:#F0EDE6; --muted:#6B7280; --gold:#C4873A; }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;padding:20px 16px 60px;}
-  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(200,255,0,0.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(255,77,28,0.04) 0%,transparent 50%);}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:20px 16px 60px;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(43,96,232,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 70%,rgba(196,135,58,0.04) 0%,transparent 50%);}
 
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;position:relative;z-index:1;}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;color:var(--accent);}
+  .logo{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.4rem;letter-spacing:3px;color:var(--accent);}
   .logo span{color:var(--text);}
   .live-row{display:flex;align-items:center;gap:6px;}
   .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all 0.3s;}
@@ -27,8 +27,8 @@
   .t-list{display:flex;flex-direction:column;gap:6px;}
   .t-item{background:var(--card);border:1px solid var(--border);padding:12px 14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;}
   .t-item:hover{border-color:var(--accent);}
-  .t-item.active{border-color:var(--accent);background:rgba(200,255,0,0.05);}
-  .t-item-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;}
+  .t-item.active{border-color:var(--accent);background:rgba(43,96,232,0.06);}
+  .t-item-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:2px;}
   .t-item-meta{font-size:0.62rem;color:var(--muted);margin-top:2px;}
   .t-item-check{color:var(--accent);font-size:1.1rem;opacity:0;flex-shrink:0;}
   .t-item.active .t-item-check{opacity:1;}
@@ -36,19 +36,19 @@
 
   /* SCENE CONTROL */
   .scene-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-  .scene-btn{background:var(--card);border:1px solid var(--border);padding:14px 6px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .scene-btn{background:var(--card);border:1px solid var(--border);padding:14px 6px;cursor:pointer;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.8rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:5px;}
   .scene-btn:hover{border-color:var(--accent);color:var(--text);}
-  .scene-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,255,0,0.06);}
+  .scene-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(43,96,232,0.06);}
   .scene-icon{font-size:1.2rem;}
   .now-playing{background:var(--surface);border:1px solid var(--border);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
   .np-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px var(--accent);flex-shrink:0;animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
   .np-lbl{font-size:0.58rem;letter-spacing:2px;color:var(--muted);}
-  .np-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--accent);}
+  .np-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:2px;color:var(--accent);}
   .nav-arrows{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
-  .nav-arrow{background:var(--surface);border:1px solid var(--border);padding:13px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;}
+  .nav-arrow{background:var(--surface);border:1px solid var(--border);padding:13px;cursor:pointer;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:2px;color:var(--muted);text-align:center;transition:all 0.2s;}
   .nav-arrow:hover{border-color:var(--accent);color:var(--accent);}
-  .nav-arrow:active{background:rgba(200,255,0,0.08);}
+  .nav-arrow:active{background:rgba(43,96,232,0.08);}
 
   /* AUTO ROTATE */
   .auto-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);padding:12px 14px;}
@@ -58,7 +58,7 @@
   .toggle input{opacity:0;width:0;height:0;}
   .toggle-slider{position:absolute;inset:0;background:var(--border);cursor:pointer;border-radius:22px;transition:background 0.2s;}
   .toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:all 0.2s;}
-  .toggle input:checked+.toggle-slider{background:rgba(200,255,0,0.3);}
+  .toggle input:checked+.toggle-slider{background:rgba(43,96,232,0.3);}
   .toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--accent);}
   .progress-wrap{margin-top:6px;display:none;}
   .progress-wrap.visible{display:block;}
@@ -70,12 +70,12 @@
   .match-list{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;}
   .match-row{background:var(--card);border:1px solid var(--border);padding:10px 12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;}
   .match-row:hover{border-color:var(--accent);}
-  .match-row.played{border-color:rgba(200,255,0,0.2);}
+  .match-row.played{border-color:rgba(43,96,232,0.2);}
   .match-row.bye-row{opacity:0.4;cursor:default;}
   .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;}
   .mr-players{flex:1;font-size:0.75rem;}
   .mr-vs{color:var(--muted);font-size:0.62rem;margin:0 4px;}
-  .mr-score{font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:var(--accent);min-width:40px;text-align:right;}
+  .mr-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;color:var(--accent);min-width:40px;text-align:right;}
   .match-tabs{display:flex;gap:0;margin-bottom:8px;}
   .match-tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
   .match-tab:first-child{border-right:none;}
@@ -87,7 +87,7 @@
   .act-btn:hover{border-color:var(--accent);color:var(--accent);}
   .act-btn.danger{border-color:rgba(255,77,28,0.3);color:var(--accent2);}
   .act-btn.danger:hover{border-color:var(--accent2);}
-  .act-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:0.9rem;}
+  .act-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;}
   .act-btn.primary:hover{background:#d4ff33;}
 
   .divider{height:1px;background:var(--border);margin:20px 0;}
@@ -96,7 +96,7 @@
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;align-items:center;justify-content:center;}
   .overlay.open{display:flex;}
   .modal{background:var(--card);border:1px solid var(--border);padding:28px;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;}
-  .modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;color:var(--accent);margin-bottom:18px;}
+  .modal h2{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.5rem;letter-spacing:3px;color:var(--accent);margin-bottom:18px;}
   .close-x{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;}
   .close-x:hover{color:var(--accent2);}
   .fg{margin-bottom:14px;}
@@ -107,20 +107,20 @@
   .tag{background:var(--surface);border:1px solid var(--border);padding:3px 8px;font-size:0.68rem;display:flex;align-items:center;gap:4px;}
   .tag button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:0.8rem;}
   .row{display:flex;gap:7px;}
-  .btn{background:var(--accent);color:var(--bg);border:none;padding:9px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+  .btn{background:var(--accent);color:var(--bg);border:none;padding:9px 18px;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
   .btn:hover{background:#d4ff33;}
-  .btn-o{background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+  .btn-o{background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 18px;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
   .btn-o:hover{border-color:var(--accent);color:var(--accent);}
   .modal-actions{display:flex;gap:7px;margin-top:18px;}
 
   /* SCORE MODAL */
-  .score-modal{width:300px;border-color:rgba(200,255,0,0.5);}
+  .score-modal{width:300px;border-color:rgba(43,96,232,0.5);}
   .sp-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
   .sp{flex:1;text-align:center;}
   .sp-name{font-size:0.65rem;color:var(--muted);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .s-inp{width:58px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px;outline:none;}
+  .s-inp{width:58px;text-align:center;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.8rem;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px;outline:none;}
   .s-inp:focus{border-color:var(--accent);}
-  .vs{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--muted);}
+  .vs{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;color:var(--muted);}
   .s-info{font-size:0.64rem;color:var(--muted);margin-bottom:12px;line-height:1.7;}
 </style>
 </head>
@@ -152,10 +152,11 @@
     <div class="np-dot"></div>
     <div><div class="np-lbl">PRIKAZUJE SE</div><div class="np-name" id="npName">—</div></div>
   </div>
-  <div class="scene-btns">
-    <button class="scene-btn" data-scene="winners" onclick="setScene('winners')"><span class="scene-icon">🏆</span>GLAVNI ŽREB</button>
-    <button class="scene-btn" data-scene="losers"  onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
-    <button class="scene-btn" data-scene="finale"  onclick="setScene('finale')"><span class="scene-icon">🥇</span>FINALE</button>
+  <div class="scene-btns" style="grid-template-columns:1fr 1fr">
+    <button class="scene-btn" data-scene="winners-1" onclick="setScene('winners-1')"><span class="scene-icon">🏆</span>ŽREB 1</button>
+    <button class="scene-btn" data-scene="winners-2" onclick="setScene('winners-2')"><span class="scene-icon">🏆</span>ŽREB 2</button>
+    <button class="scene-btn" data-scene="losers"    onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
+    <button class="scene-btn" data-scene="finale"    onclick="setScene('finale')"><span class="scene-icon">🥇</span>FINALE</button>
   </div>
   <div class="nav-arrows">
     <button class="nav-arrow" onclick="prevScene()">← PRETHODNA</button>
@@ -176,6 +177,14 @@
     <div class="progress-lbl"><span>SLEDEĆA SCENA</span><span id="progressSec">60s</span></div>
     <div class="progress-bg"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
   </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- RASPORED -->
+<div class="section">
+  <div class="section-label">RASPORED</div>
+  <div id="scheduleCtrl"><div class="no-t">Izaberi turnir</div></div>
 </div>
 
 <div class="divider"></div>
@@ -209,6 +218,7 @@
     <h2>NOVI TURNIR</h2>
     <div class="fg"><label>Naziv turnira</label><input type="text" id="inName" placeholder="npr. Pikado liga Sombor 2026"></div>
     <div class="fg"><label>Datum</label><input type="date" id="inDate"></div>
+    <div class="fg"><label>Broj tabla (paralelnih mečeva)</label><input type="number" id="inBoards" min="1" max="8" value="2" style="width:80px"></div>
     <div class="fg">
       <label>Igrači</label>
       <div class="tags" id="pTags"></div>
@@ -249,8 +259,15 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const BYE = "__BYE__";
-const SCENES = ['winners','losers','finale'];
-const SCENE_NAMES = { winners:'GLAVNI ŽREB', losers:'REPASAŽ', finale:'FINALE' };
+let SCENES = ['winners-1','losers','finale'];
+const SCENE_NAMES = { 'winners-1':'ŽREB 1', 'winners-2':'ŽREB 2', losers:'REPASAŽ', schedule:'RASPORED', finale:'FINALE', winners:'GLAVNI ŽREB' };
+
+function normalizeScene(s) {
+  if (s==='winners'||s==='winners-early') return 'winners-1';
+  if (s==='winners-late') return 'winners-2';
+  if (s==='losers-early'||s==='losers-late') return 'losers';
+  return s;
+}
 const AUTO_INTERVAL = 60;
 
 let db = [];
@@ -271,11 +288,13 @@ async function init() {
   db.forEach(t => { t._routes = buildRoutingTable(nextPow2(t.seed.length)); });
 
   const { data: sData } = await sb.from('scene_state').select('*').eq('id',1).single();
-  if (sData) { sceneState = sData; activeTid = sData.tournament_id; }
+  if (sData) { sceneState = sData; sceneState.scene = normalizeScene(sceneState.scene); activeTid = sData.tournament_id; }
 
   renderTournaments();
+  updateSceneButtons(getT());
   renderSceneUI();
   renderMatchList();
+  renderScheduleCtrl();
   subscribeRealtime();
   subscribeSceneState();
 
@@ -304,13 +323,40 @@ async function selectTournament(id) {
   sceneState.tournament_id = id;
   await pushSceneState();
   renderTournaments();
+  updateSceneButtons(getT());
+  renderSceneUI();
   renderMatchList();
+  renderScheduleCtrl();
+}
+
+function updateSceneButtons(t) {
+  const is32 = t && nextPow2(t.seed.length) === 32;
+  const container = document.querySelector('.scene-btns');
+  if (is32) {
+    SCENES = ['winners-1','winners-2','losers','schedule','finale'];
+    container.style.gridTemplateColumns = '1fr 1fr';
+    container.innerHTML = `
+      <button class="scene-btn" data-scene="winners-1" onclick="setScene('winners-1')"><span class="scene-icon">🏆</span>ŽREB 1</button>
+      <button class="scene-btn" data-scene="winners-2" onclick="setScene('winners-2')"><span class="scene-icon">🏆</span>ŽREB 2</button>
+      <button class="scene-btn" data-scene="losers"    onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
+      <button class="scene-btn" data-scene="schedule"  onclick="setScene('schedule')"><span class="scene-icon">📋</span>RASPORED</button>
+      <button class="scene-btn" data-scene="finale"    onclick="setScene('finale')" style="grid-column:span 2"><span class="scene-icon">🥇</span>FINALE</button>`;
+  } else {
+    SCENES = ['winners-1','losers','schedule','finale'];
+    container.style.gridTemplateColumns = '1fr 1fr';
+    container.innerHTML = `
+      <button class="scene-btn" data-scene="winners-1" onclick="setScene('winners-1')"><span class="scene-icon">🏆</span>GLAVNI ŽREB</button>
+      <button class="scene-btn" data-scene="losers"    onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
+      <button class="scene-btn" data-scene="schedule"  onclick="setScene('schedule')"><span class="scene-icon">📋</span>RASPORED</button>
+      <button class="scene-btn" data-scene="finale"    onclick="setScene('finale')"><span class="scene-icon">🥇</span>FINALE</button>`;
+  }
 }
 
 // ─── SCENE ───────────────────────────────────────────────────
 function renderSceneUI() {
-  document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('active', b.dataset.scene === sceneState.scene));
-  document.getElementById('npName').textContent = SCENE_NAMES[sceneState.scene] || '—';
+  const sc = normalizeScene(sceneState.scene);
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('active', b.dataset.scene === sc));
+  document.getElementById('npName').textContent = SCENE_NAMES[sc] || '—';
   const tog = document.getElementById('autoToggle');
   tog.checked = sceneState.auto_rotate;
   document.getElementById('progressWrap').classList.toggle('visible', sceneState.auto_rotate);
@@ -346,6 +392,7 @@ function subscribeSceneState() {
   sb.channel('scene_ctrl')
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'scene_state' }, p => {
       sceneState = p.new;
+      sceneState.scene = normalizeScene(sceneState.scene);
       renderSceneUI();
       renderTournaments();
     })
@@ -429,10 +476,12 @@ async function submitScore() {
   m.s1=s1; m.s2=s2; m.done=true;
   m.winner = s1>s2 ? (m.p1||'TBD') : (m.p2||'TBD');
   m.loser  = s1>s2 ? (m.p2||'TBD') : (m.p1||'TBD');
+  if (t.postponed) t.postponed = t.postponed.filter(id => id !== pendingId);
   replayAll(t);
   await updateTournament(t);
   closeOv('scoreModal');
   renderMatchList();
+  renderScheduleCtrl();
 }
 
 // ─── NEW TOURNAMENT ──────────────────────────────────────────
@@ -461,14 +510,15 @@ async function createTournament() {
   const seed=[...newPs]; shuffle(seed);
   const size=nextPow2(seed.length);
   for (let i=seed.length;i<size;i++){const pos=Math.floor(Math.random()*(seed.length+1));seed.splice(pos,0,BYE);}
-  const t={id:crypto.randomUUID(),name,date:document.getElementById('inDate').value,players:[...newPs],seed,wB:[],lB:[],gf:null,gfr:null};
+  const numBoards=parseInt(document.getElementById('inBoards').value)||2;
+  const t={id:crypto.randomUUID(),name,date:document.getElementById('inDate').value,players:[...newPs],seed,wB:[],lB:[],gf:null,gfr:null,num_boards:numBoards,postponed:[]};
   genBracket(t); replayAll(t); resolveByesReplay(t);
-  const {data,error}=await sb.from('tournaments').insert([{id:t.id,name:t.name,date:t.date,players:t.players,seed:t.seed,wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr}]).select();
+  const {data,error}=await sb.from('tournaments').insert([{id:t.id,name:t.name,date:t.date,players:t.players,seed:t.seed,wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr,num_boards:numBoards,postponed:[]}]).select();
   if (error){console.error(error);alert('Greška!');return;}
   db.unshift(data[0]);
   activeTid=data[0].id; sceneState.tournament_id=data[0].id;
   await pushSceneState();
-  renderTournaments(); renderMatchList(); closeOv('newModal');
+  renderTournaments(); renderMatchList(); renderScheduleCtrl(); closeOv('newModal');
 }
 
 // ─── REALTIME ────────────────────────────────────────────────
@@ -478,7 +528,7 @@ function subscribeRealtime() {
       const u=payload.new;
       const idx=db.findIndex(t=>t.id===u.id);
       if (idx!==-1) db[idx]=u; else db.unshift(u);
-      renderTournaments(); renderMatchList();
+      renderTournaments(); renderMatchList(); renderScheduleCtrl();
     })
     .subscribe();
 }
@@ -506,8 +556,60 @@ function doExport() {
 }
 
 async function updateTournament(t) {
-  const {error}=await sb.from('tournaments').update({wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr}).eq('id',t.id);
+  const {error}=await sb.from('tournaments').update({wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr,postponed:t.postponed||[]}).eq('id',t.id);
   if (error) console.error(error);
+}
+
+function getReadyMatches(t) {
+  const ready=[];
+  for (const r of (t.wB||[])) for (const m of r)
+    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
+  for (const r of (t.lB||[])) for (const m of r)
+    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
+  if (t.gf&&!t.gf.done&&t.gf.p1&&t.gf.p2) ready.push(t.gf);
+  if (t.gfr&&!t.gfr.done&&t.gfr.p1&&t.gfr.p2) ready.push(t.gfr);
+  return ready;
+}
+
+function getScheduleQueue(t) {
+  const numBoards = t.num_boards || 2;
+  const allReady = getReadyMatches(t);
+  // filter out postponed IDs that are no longer ready (already played)
+  const postponedIds = (t.postponed || []).filter(id => allReady.some(m => m.id === id));
+  const postponedMatches = postponedIds.map(id => allReady.find(m => m.id === id)).filter(Boolean);
+  const normal = allReady.filter(m => !postponedIds.includes(m.id));
+  const playing = normal.slice(0, numBoards);
+  const next = [...postponedMatches, ...normal.slice(numBoards)].slice(0, numBoards);
+  return { playing, next };
+}
+
+function renderScheduleCtrl() {
+  const t=getT();
+  const el=document.getElementById('scheduleCtrl');
+  if (!t){el.innerHTML='<div class="no-t" style="padding:10px">Izaberi turnir</div>';return;}
+  replayAll(t);
+  const {playing,next}=getScheduleQueue(t);
+  const row=(m,canPostpone)=>`
+    <div class="match-row">
+      <span class="mr-id">${m.id}</span>
+      <span class="mr-players">${m.p1||'TBD'}<span class="mr-vs">vs</span>${m.p2||'TBD'}</span>
+      ${canPostpone?`<button class="act-btn" style="padding:3px 8px;font-size:0.55rem;flex:0;min-width:0" onclick="postponeMatch('${m.id}')">ODLOŽI</button>`:''}
+    </div>`;
+  el.innerHTML=`
+    <div class="section-label" style="color:var(--accent);margin:0 0 4px">IGRA SE</div>
+    ${playing.length?playing.map(m=>row(m,true)).join(''):'<div class="no-t" style="padding:8px">Nema aktivnih</div>'}
+    <div class="section-label" style="color:var(--muted);margin:10px 0 4px">SLEDEĆI</div>
+    ${next.length?next.map(m=>row(m,false)).join(''):'<div class="no-t" style="padding:8px">Nema sledećih</div>'}`;
+}
+
+async function postponeMatch(matchId) {
+  const t = getT();
+  if (!t) return;
+  const current = t.postponed || [];
+  if (!current.includes(matchId))
+    t.postponed = [matchId, ...current];
+  await updateTournament(t);
+  renderScheduleCtrl();
 }
 
 // ─── BRACKET ENGINE (full copy from index.html) ──────────────

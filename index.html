@@ -3,20 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Target Sombor – TV</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Target Sombor - TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-  :root { --bg:#0d0f0e; --surface:#161a18; --card:#1e2421; --border:#2e3830; --accent:#c8ff00; --accent2:#ff4d1c; --text:#e8ede9; --muted:#6b7a6e; --gold:#ffd700; }
+  :root {
+    --bg:      #09090E;
+    --surface: #12131F;
+    --card:    #1A1C2E;
+    --border:  #3C3560;
+    --accent:  #2B60E8;
+    --accent2: #C4873A;
+    --text:    #F0EDE6;
+    --muted:   #6B7280;
+    --gold:    #C4873A;
+  }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;}
-  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 50%,rgba(200,255,0,0.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(255,77,28,0.03) 0%,transparent 50%);}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 20% 50%,rgba(43,96,232,0.06) 0%,transparent 60%),
+               radial-gradient(ellipse at 80% 20%,rgba(196,135,58,0.04) 0%,transparent 50%);}
 
-  /* TV HEADER — minimal, just logo + tournament name + scene indicator */
+  /* TV HEADER */
   .tv-header{display:flex;align-items:center;gap:20px;padding:14px 32px;border-bottom:1px solid var(--border);position:relative;z-index:10;}
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--accent);flex-shrink:0;}
-  .logo span{color:var(--text);}
-  .tv-tournament-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--text);}
+  .logo{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.5rem;letter-spacing:0.1em;color:var(--text);flex-shrink:0;}
+  .tv-tournament-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.1rem;letter-spacing:0.08em;color:var(--muted);}
   .tv-scene-badge{margin-left:auto;font-size:0.6rem;letter-spacing:2px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
@@ -25,41 +36,52 @@
 
   /* BRACKET LAYOUT */
   .bracket-scroll{overflow-x:auto;padding:24px 32px;}
-  .blabel{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;}
+  .blabel{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:16px;text-transform:uppercase;}
   .blabel.lb{color:var(--accent2);}
   .blabel.gfl{color:var(--gold);}
   .rounds{display:flex;align-items:flex-start;min-width:max-content;gap:100px;}
   .round-col{display:flex;flex-direction:column;justify-content:space-around;}
   .round-col .match-card{margin-top:0;margin-bottom:0;}
-  .round-title{font-size:0.62rem;letter-spacing:2px;color:var(--muted);text-align:center;padding:0 8px 10px;text-transform:uppercase;}
-  .match-card{width:190px;border:1px solid var(--border);background:var(--card);position:relative;margin:4px 0;flex-shrink:0;cursor:default;}
-  .match-card.gfc{border-color:rgba(255,215,0,0.35);}
-  .mp{display:flex;align-items:center;padding:6px 9px;font-size:0.76rem;border-bottom:1px solid var(--border);min-height:30px;}
+  .round-title{font-size:0.6rem;letter-spacing:0.2em;color:var(--muted);text-align:center;padding:0 8px 10px;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
+  .match-card{width:200px;border:1px solid var(--border);background:var(--card);position:relative;margin:4px 0;flex-shrink:0;cursor:default;}
+  .match-card.gfc{border-color:rgba(196,135,58,0.5);}
+  .mp{display:flex;align-items:center;padding:7px 10px;font-size:0.78rem;border-bottom:1px solid var(--border);min-height:32px;}
   .mp:last-child{border-bottom:none;}
-  .mp.win{background:rgba(200,255,0,0.07);color:var(--accent);}
+  .mp.win{background:rgba(43,96,232,0.1);color:var(--accent);}
   .mp.lose{color:var(--muted);text-decoration:line-through;}
   .mp.tbd{color:var(--muted);font-style:italic;}
-  .mp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .mp-score{font-family:'Bebas Neue',sans-serif;font-size:1rem;min-width:20px;text-align:right;color:var(--muted);}
+  .mp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+  .mp-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.1rem;min-width:22px;text-align:right;color:var(--muted);}
   .mp.win .mp-score{color:var(--accent);}
-  .mid{position:absolute;top:-7px;left:7px;font-size:0.58rem;color:var(--muted);background:var(--card);padding:0 3px;letter-spacing:1px;}
+  .mid{position:absolute;top:-7px;left:7px;font-size:0.55rem;color:var(--muted);background:var(--card);padding:0 3px;letter-spacing:1px;font-family:'DM Sans',sans-serif;}
   .gf-section{padding:24px 32px 32px;}
   .gf-note{font-size:0.7rem;color:var(--muted);margin-top:10px;line-height:1.8;}
-  .champ-box{margin-top:20px;padding:18px 26px;border:1px solid var(--gold);background:rgba(255,215,0,0.04);display:inline-block;}
-  .champ-lbl{font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:4px;color:var(--gold);}
-  .champ-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;}
+  .champ-box{margin-top:20px;padding:20px 30px;border:1px solid var(--gold);background:rgba(196,135,58,0.06);display:inline-block;}
+  .champ-lbl{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.75rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .champ-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:2.2rem;letter-spacing:0.08em;}
+
+  /* SCHEDULE SCENE */
+  .sched-wrap{display:flex;gap:32px;justify-content:center;align-items:flex-start;padding:32px;height:calc(100vh - 60px);box-sizing:border-box;}
+  .sched-box{flex:1;max-width:520px;border:1px solid var(--border);background:var(--card);padding:24px 28px;}
+  .sched-box-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.85rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .sched-match{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(60,53,96,0.4);}
+  .sched-match:last-child{border-bottom:none;}
+  .sched-match-id{font-size:0.55rem;color:var(--muted);min-width:60px;font-family:'DM Mono',monospace;}
+  .sched-match-p{flex:1;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sched-match-vs{font-size:0.65rem;color:var(--muted);padding:0 4px;flex-shrink:0;}
+  .sched-empty{color:var(--muted);font-style:italic;font-size:0.8rem;padding:8px 0;}
 
   /* WAITING SCREEN */
   .waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;position:relative;z-index:1;}
   .waiting-icon{font-size:3rem;}
-  .waiting-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:4px;color:var(--muted);}
-  .waiting-sub{font-size:0.7rem;color:var(--muted);letter-spacing:2px;}
+  .waiting-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.8rem;letter-spacing:0.12em;color:var(--muted);}
+  .waiting-sub{font-size:0.7rem;color:var(--muted);letter-spacing:0.2em;font-family:'DM Sans',sans-serif;}
 </style>
 </head>
 <body>
 
 <div class="tv-header">
-  <div class="logo">🎯 TARGET <span>SOMBOR</span></div>
+  <div class="logo">TARGET</div>
   <div class="tv-tournament-name" id="tvTournamentName"></div>
   <div class="tv-scene-badge">
     <span class="live-dot" id="liveDot" style="background:var(--muted);box-shadow:none"></span>
@@ -75,14 +97,24 @@
     <div class="waiting-sub">Izaberi turnir u Scene Controlleru</div>
   </div>
 
-  <!-- SCENE: WINNERS -->
-  <div id="sceneWinners" style="display:none">
-    <div class="bracket-scroll"><div class="blabel">GLAVNI ŽREB</div><div class="rounds" id="wRounds"></div></div>
+  <!-- SCENE: WINNERS 1 -->
+  <div id="sceneWinners1" style="display:none">
+    <div class="bracket-scroll"><div class="blabel">ŽREB 1</div><div class="rounds" id="wRoundsTop"></div></div>
+  </div>
+
+  <!-- SCENE: WINNERS 2 -->
+  <div id="sceneWinners2" style="display:none">
+    <div class="bracket-scroll"><div class="blabel">ŽREB 2</div><div class="rounds" id="wRoundsBottom"></div></div>
   </div>
 
   <!-- SCENE: LOSERS -->
   <div id="sceneLosers" style="display:none">
     <div class="bracket-scroll"><div class="blabel lb">REPASAŽ</div><div class="rounds" id="lRounds"></div></div>
+  </div>
+
+  <!-- SCENE: SCHEDULE -->
+  <div id="sceneSchedule" style="display:none">
+    <div class="sched-wrap" id="scheduleArea"></div>
   </div>
 
   <!-- SCENE: FINALE -->
@@ -100,7 +132,21 @@ const sb = window._sb;
 const BYE = "__BYE__";
 let db = [];
 let activeTid = null;
-let activeScene = 'winners';
+let activeScene = 'winners-1';
+
+const ALL_SCENE_IDS = ['sceneWinners1','sceneWinners2','sceneLosers','sceneSchedule','sceneFinale'];
+const SCENE_MAP = {
+  'winners-1':     { el:'sceneWinners1',  name:'ŽREB 1' },
+  'winners-2':     { el:'sceneWinners2',  name:'ŽREB 2' },
+  'losers':        { el:'sceneLosers',    name:'REPASAŽ' },
+  'schedule':      { el:'sceneSchedule',  name:'RASPORED' },
+  'finale':        { el:'sceneFinale',    name:'FINALE' },
+  'winners':       { el:'sceneWinners1',  name:'ŽREB 1' },
+  'winners-early': { el:'sceneWinners1',  name:'ŽREB 1' },
+  'winners-late':  { el:'sceneWinners2',  name:'ŽREB 2' },
+  'losers-early':  { el:'sceneLosers',    name:'REPASAŽ' },
+  'losers-late':   { el:'sceneLosers',    name:'REPASAŽ' },
+};
 
 // ─── INIT ────────────────────────────────────────────────────
 async function init() {
@@ -135,7 +181,7 @@ function applySceneState(state) {
   if (activeTid !== state.tournament_id) {
     activeTid = state.tournament_id;
     replayAll(t);
-    renderW(t); renderL(t); renderGF(t);
+    renderAllBrackets(t);
   }
 
   activeScene = state.scene;
@@ -145,9 +191,7 @@ function applySceneState(state) {
 function showWaiting() {
   activeTid = null;
   document.getElementById('waitingScreen').style.display = '';
-  document.getElementById('sceneWinners').style.display = 'none';
-  document.getElementById('sceneLosers').style.display = 'none';
-  document.getElementById('sceneFinale').style.display = 'none';
+  ALL_SCENE_IDS.forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('tvTournamentName').textContent = '';
   document.getElementById('tvSceneName').textContent = '—';
   const dot = document.getElementById('liveDot');
@@ -156,14 +200,29 @@ function showWaiting() {
 
 function showScene(scene, t) {
   document.getElementById('waitingScreen').style.display = 'none';
-  document.getElementById('sceneWinners').style.display = scene === 'winners' ? '' : 'none';
-  document.getElementById('sceneLosers').style.display  = scene === 'losers'  ? '' : 'none';
-  document.getElementById('sceneFinale').style.display  = scene === 'finale'  ? '' : 'none';
+  ALL_SCENE_IDS.forEach(id => document.getElementById(id).style.display = 'none');
+  const is32 = nextPow2(t.seed.length) === 32;
+  const resolved = (!is32 && scene === 'winners-2') ? 'winners-1' : scene;
+  const info = SCENE_MAP[resolved] || SCENE_MAP['winners-1'];
+  document.getElementById(info.el).style.display = '';
   document.getElementById('tvTournamentName').textContent = t.name;
-  const names = { winners:'GLAVNI ŽREB', losers:'REPASAŽ', finale:'FINALE' };
-  document.getElementById('tvSceneName').textContent = names[scene] || scene;
+  document.getElementById('tvSceneName').textContent = info.name;
   const dot = document.getElementById('liveDot');
   dot.style.background = 'var(--accent)'; dot.style.boxShadow = '0 0 6px var(--accent)';
+  requestAnimationFrame(() => fitSceneHeight(info.el));
+}
+
+function fitSceneHeight(sceneId) {
+  const sceneEl = document.getElementById(sceneId);
+  const scroll = sceneEl?.querySelector('.bracket-scroll');
+  if (!scroll) return;
+  scroll.style.zoom = '';
+  const headerH = document.querySelector('.tv-header').offsetHeight;
+  const available = window.innerHeight - headerH - 48;
+  const contentH = scroll.scrollHeight;
+  if (contentH > available && available > 0) {
+    scroll.style.zoom = available / contentH;
+  }
 }
 
 // ─── REALTIME TOURNAMENT UPDATES ────────────────────────────
@@ -177,7 +236,7 @@ function subscribeRealtime() {
         const t = db.find(t => t.id === activeTid);
         t._routes = buildRoutingTable(nextPow2(t.seed.length));
         replayAll(t);
-        renderW(t); renderL(t); renderGF(t);
+        renderAllBrackets(t);
         showScene(activeScene, t);
       }
     })
@@ -226,7 +285,7 @@ function buildRoutingTable(size) {
     for (let i=0;i<4;i++) routes[`L_R2_M${i}`]={win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
     for (let i=0;i<2;i++) routes[`L_R3_M${i}`]={win:{b:'L',r:3,m:i,s:1},lose:null};
     for (let i=0;i<2;i++) routes[`L_R4_M${i}`]={win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
-    routes['L_R4_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
+    routes['L_R4_M0']={win:{b:'L',r:4,m:0,s:1},lose:null};
     routes['L_R5_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
     routes['L_R6_M0']={win:{b:'GF',s:2},lose:null};
     routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
@@ -292,32 +351,82 @@ function getChamp(t){if(!t.gf||!t.gf.done)return null;if(t.gf.winner===t.gf.p1)r
 // ─── RENDER (no onclick, pure display) ───────────────────────
 const WNAMES=['1. KOLO','2. KOLO','ČETVRTFINALE','POLUFINALE','FINALE W','W FINALE'];
 
-function renderW(t) {
-  const cont=document.getElementById('wRounds');cont.innerHTML='';
-  t.wB.forEach((round,ri)=>{
+function setRoundsLayout(cont, size) {
+  if (size >= 16) {
+    cont.style.gap='0';
+    cont.style.justifyContent='space-between';
+    cont.style.width='100%';
+    cont.style.minWidth='0';
+  } else {
+    cont.style.gap='100px';
+    cont.style.justifyContent='';
+    cont.style.width='';
+    cont.style.minWidth='';
+  }
+}
+
+function renderWHalf(containerId, t, isBottom) {
+  const size=nextPow2(t.seed.length);
+  const cont=document.getElementById(containerId);cont.innerHTML='';
+  const matchH=62,gap=33,unit=matchH+gap;
+  const wRounds=t.wB.slice(0,-1);
+  wRounds.forEach((round,ri)=>{
+    const matches=isBottom
+      ?round.slice(Math.floor(round.length/2))
+      :round.slice(0,Math.ceil(round.length/2));
+    if(!matches.length)return;
     const rd=document.createElement('div');rd.className='round-col';
     rd.innerHTML=`<div class="round-title">${WNAMES[ri]||'KOLO '+(ri+1)}</div>`;
-    const matchH=62,gap=33,unit=matchH+gap;
     let spacing=unit;
     for(let i=1;i<ri;i++) spacing=spacing*2+unit;
     const topPad=ri===0?0:spacing/2;
-    round.forEach((m,mi)=>{
+    matches.forEach((m,mi)=>{
       const el=mEl(m);
       if(ri===0){el.style.marginBottom=`${gap}px`;}
       else{el.style.marginBottom=`${gap}px`;el.style.marginTop=mi===0?`${topPad}px`:`${spacing}px`;}
       rd.appendChild(el);
     });
     cont.appendChild(rd);
-    if(ri<t.wB.length-1)cont.appendChild(gapEl());
   });
+  setRoundsLayout(cont,size);
+}
+
+function renderW(t) {
+  const size=nextPow2(t.seed.length);
+  if (size===32) {
+    renderWHalf('wRoundsTop',t,false);
+    renderWHalf('wRoundsBottom',t,true);
+  } else {
+    const cont=document.getElementById('wRoundsTop');cont.innerHTML='';
+    document.getElementById('wRoundsBottom').innerHTML='';
+    const matchH=62,gap=33,unit=matchH+gap;
+    const wRounds=t.wB.slice(0,-1);
+    wRounds.forEach((round,ri)=>{
+      const rd=document.createElement('div');rd.className='round-col';
+      rd.innerHTML=`<div class="round-title">${WNAMES[ri]||'KOLO '+(ri+1)}</div>`;
+      let spacing=unit;
+      for(let i=1;i<ri;i++) spacing=spacing*2+unit;
+      const topPad=ri===0?0:spacing/2;
+      round.forEach((m,mi)=>{
+        const el=mEl(m);
+        if(ri===0){el.style.marginBottom=`${gap}px`;}
+        else{el.style.marginBottom=`${gap}px`;el.style.marginTop=mi===0?`${topPad}px`:`${spacing}px`;}
+        rd.appendChild(el);
+      });
+      cont.appendChild(rd);
+    });
+    setRoundsLayout(cont,size);
+  }
 }
 
 function renderL(t) {
+  const size=nextPow2(t.seed.length);
   const cont=document.getElementById('lRounds');cont.innerHTML='';
-  t.lB.forEach((round,ri)=>{
+  const matchH=62,gap=33,unit=matchH+gap;
+  const lRounds=t.lB.slice(0,-1);
+  lRounds.forEach((round,ri)=>{
     const rd=document.createElement('div');rd.className='round-col';
     rd.innerHTML=`<div class="round-title" style="color:var(--accent2)">L-${ri+1}</div>`;
-    const matchH=62,gap=33,unit=matchH+gap;
     const reducesDone=Math.floor(ri/2);
     let spacing=unit;
     for(let i=1;i<reducesDone;i++) spacing=spacing*2+unit;
@@ -330,12 +439,84 @@ function renderL(t) {
       rd.appendChild(el);
     });
     cont.appendChild(rd);
-    if(ri<t.lB.length-1)cont.appendChild(gapEl());
   });
+  setRoundsLayout(cont,size);
+}
+
+function renderAllBrackets(t) {
+  renderW(t);
+  renderL(t);
+  renderGF(t);
+  renderSchedule(t);
+}
+
+function getReadyMatches(t) {
+  const ready=[];
+  for (const r of (t.wB||[])) for (const m of r)
+    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
+  for (const r of (t.lB||[])) for (const m of r)
+    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
+  if (t.gf&&!t.gf.done&&t.gf.p1&&t.gf.p2) ready.push(t.gf);
+  if (t.gfr&&!t.gfr.done&&t.gfr.p1&&t.gfr.p2) ready.push(t.gfr);
+  return ready;
+}
+
+function getScheduleQueue(t) {
+  const numBoards=t.num_boards||2;
+  const allReady=getReadyMatches(t);
+  const postponedIds=(t.postponed||[]).filter(id=>allReady.some(m=>m.id===id));
+  const postponedMatches=postponedIds.map(id=>allReady.find(m=>m.id===id)).filter(Boolean);
+  const normal=allReady.filter(m=>!postponedIds.includes(m.id));
+  const playing=normal.slice(0,numBoards);
+  const next=[...postponedMatches,...normal.slice(numBoards)].slice(0,numBoards);
+  return {playing,next};
+}
+
+function renderSchedule(t) {
+  const area=document.getElementById('scheduleArea');
+  area.innerHTML='';
+  const {playing,next}=getScheduleQueue(t);
+
+  function box(title,color,matches){
+    const d=document.createElement('div');d.className='sched-box';
+    const h=document.createElement('div');h.className='sched-box-title';
+    h.style.color=color;h.textContent=title;d.appendChild(h);
+    if(!matches.length){
+      const e=document.createElement('div');e.className='sched-empty';e.textContent='—';d.appendChild(e);
+    } else {
+      matches.forEach(m=>{
+        const r=document.createElement('div');r.className='sched-match';
+        r.innerHTML=`<span class="sched-match-id">${m.id}</span><span class="sched-match-p">${m.p1}</span><span class="sched-match-vs">VS</span><span class="sched-match-p">${m.p2}</span>`;
+        d.appendChild(r);
+      });
+    }
+    return d;
+  }
+
+  area.appendChild(box('TRENUTNO SE IGRA','var(--accent)',playing));
+  area.appendChild(box('SLEDEĆI NA REDU','var(--muted)',next));
 }
 
 function renderGF(t) {
   const area=document.getElementById('gfArea');area.innerHTML='';
+
+  function lbl(text,color){
+    const d=document.createElement('div');
+    d.style.cssText=`font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.75rem;letter-spacing:3px;color:${color};margin:0 0 6px`;
+    d.textContent=text;return d;
+  }
+  function spacer(h=16){const d=document.createElement('div');d.style.height=h+'px';return d;}
+  function hr(){const d=document.createElement('div');d.style.cssText='height:1px;background:var(--border);margin:18px 0';return d;}
+
+  const wFinal=t.wB[t.wB.length-1]?.[0];
+  if(wFinal){area.appendChild(lbl('FINALE W','var(--accent)'));area.appendChild(mEl(wFinal));area.appendChild(spacer());}
+
+  const lFinal=t.lB[t.lB.length-1]?.[0];
+  if(lFinal){area.appendChild(lbl('FINALE L','var(--accent2)'));area.appendChild(mEl(lFinal));}
+
+  area.appendChild(hr());
+
+  area.appendChild(lbl('GRAND FINAL','var(--gold)'));
   area.appendChild(mEl(t.gf,true));
   if(t.gf.done){
     if(t.gf.winner===t.gf.p1){area.appendChild(champEl(t.gf.winner));}
@@ -343,9 +524,8 @@ function renderGF(t) {
       const note=document.createElement('div');note.className='gf-note';
       note.innerHTML='⚡ <strong style="color:var(--accent2)">EGAL</strong> — Repasaž finalista mora pobediti dva puta.';
       area.appendChild(note);
-      const rl=document.createElement('div');
-      rl.style.cssText='font-family:Bebas Neue,sans-serif;font-size:0.85rem;letter-spacing:3px;color:var(--accent2);margin:14px 0 6px';
-      rl.textContent='ODLUČUJUĆI SET';area.appendChild(rl);
+      area.appendChild(spacer(10));
+      area.appendChild(lbl('ODLUČUJUĆI SET','var(--accent2)'));
       area.appendChild(mEl(t.gfr,true));
       if(t.gfr.done)area.appendChild(champEl(t.gfr.winner));
     }
