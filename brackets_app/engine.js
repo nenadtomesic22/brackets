@@ -41,13 +41,15 @@ function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.fl
 function nextPow2(n) { let x = 1; while (x < n) x *= 2; return x; }
 
 // ─── ROUTING ──────────────────────────────────────────────────
-// Struktura je ista kao na štampanom Target listiću (double elimination):
+// Parovi su isti kao na štampanom Target listiću (double elimination):
 //   W kolo r (0-based) ima size>>(r+1) mečeva.
 //   L kola: 2*k-2 komada (k = log2 size). Parna kola su "reduce" (L pobednici
 //   igraju međusobno), neparna su "feed" (u njih padaju poraženi iz W kola).
-//   Poraženi iz W kola r>=1 pada u L kolo 2r-1, meč m=i (isti redosled),
-//   a pobednici prethodnog L kola ulaze u OBRNUTOM redosledu — tako se
-//   izbegava revanš odmah posle poraza (David iz W2 igra Branka, ne Stefana).
+//   Pobednici L kola uvek idu PRAVO (L_R1_M4 → L_R2_M4, reduce: 2i,2i+1 → i),
+//   pa se na ekranu vidi ko koga čeka. Da bi se izbegao revanš odmah posle
+//   poraza, poraženi iz W kola r padaju u feed kolo 2r-1 OBRNUTIM redosledom
+//   kad je r neparno (r=1: David iz W2 igra Branka, ne Stefana) i pravo kad je
+//   r parno — to daje identične parove kao ukršteni redosled na papiru.
 function lCount(size, j) { return j % 2 === 0 ? size >> (j / 2 + 2) : size >> ((j + 1) / 2 + 1); }
 
 function buildRoutingTable(size) {
@@ -57,7 +59,8 @@ function buildRoutingTable(size) {
     for (let i = 0; i < cnt; i++) {
       routes[`W_R${r + 1}_M${i}`] = {
         win:  r === k - 1 ? { b: 'GF', s: 1 } : { b: 'W', r: r + 1, m: i >> 1, s: (i % 2) + 1 },
-        lose: r === 0 ? { b: 'L', r: 0, m: i >> 1, s: (i % 2) + 1 } : { b: 'L', r: 2 * r - 1, m: i, s: 2 },
+        lose: r === 0 ? { b: 'L', r: 0, m: i >> 1, s: (i % 2) + 1 }
+                      : { b: 'L', r: 2 * r - 1, m: r % 2 === 1 ? cnt - 1 - i : i, s: 2 },
       };
     }
   }
@@ -66,7 +69,7 @@ function buildRoutingTable(size) {
     for (let i = 0; i < cnt; i++) {
       let win;
       if (j === lastL) win = { b: 'GF', s: 2 };
-      else if (j % 2 === 0) win = { b: 'L', r: j + 1, m: cnt - 1 - i, s: 1 };   // reduce → feed, obrnuto
+      else if (j % 2 === 0) win = { b: 'L', r: j + 1, m: i, s: 1 };            // reduce → feed, pravo
       else win = { b: 'L', r: j + 1, m: i >> 1, s: (i % 2) + 1 };              // feed → reduce
       routes[`L_R${j + 1}_M${i}`] = { win, lose: null };
     }
@@ -76,9 +79,22 @@ function buildRoutingTable(size) {
   return routes;
 }
 
+// Redosled igranja kola = redosled numeracije mečeva na listiću (1, 2, 3 …):
+// W1, L1, W2, L2, L3, W3, L4, L5, … , W finale, L finale, GF. Repasaž se igra
+// čim može, ne tek posle celog glavnog žreba.
+function playOrder(t) {
+  const k = t.wB.length, order = [t.wB[0], t.lB[0]];
+  for (let r = 1; r < k; r++) {
+    order.push(t.wB[r], t.lB[2 * r - 1]);
+    if (t.lB[2 * r]) order.push(t.lB[2 * r]);
+  }
+  order.push([t.gf], [t.gfr]);
+  return order.flat().filter(Boolean);
+}
+
 // ─── STRUKTURA ────────────────────────────────────────────────
 function mkM(id, p1 = null, p2 = null) {
-  return { id, p1, p2, s1: null, s2: null, winner: null, loser: null, done: false, nextWin: null, nextLose: null };
+  return { id, num: 0, p1, p2, s1: null, s2: null, winner: null, loser: null, done: false, nextWin: null, nextLose: null };
 }
 function applyRoutes(m, routes) { const r = routes[m.id]; if (!r) return; m.nextWin = r.win || null; m.nextLose = r.lose || null; }
 
@@ -102,6 +118,7 @@ function genBracket(t) {
   }
   t.gf = mkM('GF'); applyRoutes(t.gf, routes);
   t.gfr = mkM('GFR'); applyRoutes(t.gfr, routes);
+  playOrder(t).forEach((m, i) => { m.num = i + 1; });
 }
 
 // ─── REPLAY ───────────────────────────────────────────────────
@@ -175,7 +192,8 @@ function wRoundName(t, ri) {
 function lRoundName(t, ri) { return ri === t.lB.length - 1 ? 'FINALE REPASAŽA' : `REPASAŽ ${ri + 1}`; }
 
 // ─── RASPORED ─────────────────────────────────────────────────
-function getReadyMatches(t) { return allMatches(t).filter(m => !m.done && isPlayable(m)); }
+// Spremni mečevi po broju meča (= redosled igranja sa listića)
+function getReadyMatches(t) { return allMatches(t).filter(m => !m.done && isPlayable(m)).sort((a, b) => a.num - b.num); }
 // Prvih N spremnih = IGRA SE, sledećih N = SLEDEĆI. Odloženi mečevi nikad ne
 // ulaze u IGRA SE sami od sebe — stoje na početku SLEDEĆI dok se ne vrate.
 function getScheduleQueue(t) {

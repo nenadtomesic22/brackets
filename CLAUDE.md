@@ -91,14 +91,21 @@ na random stranu para. U repasažu BYE vs BYE ipak može da nastane (dva susedna
 tada BYE "pobeđuje" i ide dalje dok ne sretne pravog igrača. BYE meč čeka dok protivnik nije poznat.
 
 ### Routing (generisan, ne hard-kodiran)
-`buildRoutingTable(size)` radi za bilo koji stepen dvojke 4–32 i reprodukuje **papirni Target listić**:
-- W kolo r (0-based) → poraženi iz kola 0 idu u L kolo 0 u parovima; poraženi iz kola r≥1 idu u L kolo `2r-1`,
-  meč `m=i` (isti redosled), slot 2
-- L kola: parna = *reduce* (L pobednici međusobno), neparna = *feed* (u njih padaju W poraženi)
-- Pobednici reduce kola ulaze u feed kolo u **obrnutom redosledu** (`m = cnt-1-i`) — zato David (poraženi iz W2 M0)
-  igra Branka (pobednik L1 M3), a ne Stefana koga je već pobedio. Ovo je bila glavna greška starog "repasaž" mapiranja.
+`buildRoutingTable(size)` radi za bilo koji stepen dvojke 4–32 i daje **iste parove kao papirni Target listić**:
+- W kolo 0 → poraženi idu u L kolo 0 u parovima (M0+M1 → L_R1_M0 …)
+- L kola: parna = *reduce* (L pobednici međusobno), neparna = *feed* (u njih padaju W poraženi).
+  Pobednici L kola **uvek idu pravo** (`L_R1_M4 → L_R2_M4`, reduce: 2i,2i+1 → i) — na TV-u bez linija se vidi ko koga čeka
+- Poraženi iz W kola r≥1 padaju u feed kolo `2r-1`, slot 2, **obrnutim redosledom kad je r neparno** (`m = cnt-1-i`)
+  i pravo kad je r parno. Tako David (poraženi iz W2 M0) igra Branka, ne Stefana koga je već pobedio —
+  isto što papir postiže ukrštenim linijama
 - Broj L kola = `2*log2(size) - 2`; poslednje L kolo (finale repasaža) → GF slot 2
 - Svaki meč ima `nextWin`/`nextLose: {b, r, m, s}` — `b` bracket (`'W'|'L'|'GF'|'GFR'`), `r` kolo (0-based), `m` meč, `s` slot (1=p1, 2=p2)
+
+### Numeracija mečeva (`m.num`)
+Kao na listiću — redosled igranja: W1 (1-8), L1 (9-12), W2 (13-16), L2 (17-20), L3 (21-22), W3 (23-24), L4 (25-26),
+L5 (27), W finale (28), L finale (29), GF (30), GFR (31) za 16 igrača. `playOrder(t)` daje taj redosled;
+`genBracket` dodeljuje brojeve. Raspored (`getReadyMatches`) sortira po `num` — repasaž se igra čim može,
+ne tek posle celog glavnog žreba. TV kartice i kontroler prikazuju broj meča.
 
 ### Ključne funkcije (engine.js)
 ```

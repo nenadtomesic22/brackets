@@ -78,7 +78,8 @@
   .match-row:hover{border-color:var(--accent);}
   .match-row.played{border-color:rgba(43,96,232,0.2);}
   .match-row.bye-row{opacity:0.4;cursor:default;}
-  .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;}
+  .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;font-family:'DM Mono',monospace;}
+  .mr-id b{color:var(--text);font-size:0.8rem;font-weight:500;display:block;}
   .mr-players{flex:1;font-size:0.75rem;}
   .mr-vs{color:var(--muted);font-size:0.62rem;margin:0 4px;}
   .mr-btn{padding:3px 8px;font-size:0.55rem;flex:0;min-width:0;white-space:nowrap;}
@@ -461,7 +462,7 @@ function renderMatchList() {
     return `<div class="match-row ${m.done&&!isBye?'played':''} ${!clickable?'bye-row':''}"
       onclick="${clickable?'openScoreModal(\''+m.id+'\')':''}"
     >
-      <span class="mr-id">${m.id}</span>
+      <span class="mr-id"><b>${m.num}</b>${m.id}</span>
       <span class="mr-players">${esc(p1)}<span class="mr-vs">vs</span>${esc(p2)}</span>
       <span class="mr-score">${score}</span>
     </div>`;
@@ -477,7 +478,7 @@ function openScoreModal(id) {
   document.getElementById('sp2n').textContent = m.p2;
   document.getElementById('sp1').value = m.s1 ?? 0;
   document.getElementById('sp2').value = m.s2 ?? 0;
-  document.getElementById('sInfo').innerHTML = `Meč: <strong>${id}</strong>`+(m.done?'<br><span style="color:var(--accent2)">⚠ Već odigran — izmena poništava rezultate mečeva koji zavise od ovog</span>':'');
+  document.getElementById('sInfo').innerHTML = `Meč <strong>${m.num}</strong> · ${id}`+(m.done?'<br><span style="color:var(--accent2)">⚠ Već odigran — izmena poništava rezultate mečeva koji zavise od ovog</span>':'');
   openOv('scoreModal');
 }
 
@@ -563,11 +564,11 @@ async function doReset() {
 function doExport() {
   const t=getT(); if (!t) return;
   const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
-  const rows=[['Bracket','Meč','Igrač 1','Score 1','Igrač 2','Score 2','Pobednik']];
-  allMatches(t).forEach(m=>{
+  const rows=[['Br.','Bracket','Meč','Igrač 1','Score 1','Igrač 2','Score 2','Pobednik']];
+  [...allMatches(t)].sort((a,b)=>a.num-b.num).forEach(m=>{
     const br=m.id.startsWith('W')?'Winners':m.id.startsWith('L')?'Losers':'Grand Final';
     const nm=v=>v===BYE?'BYE':v;
-    rows.push([br,m.id,nm(m.p1),m.s1,nm(m.p2),m.s2,nm(m.winner)]);
+    rows.push([m.num,br,m.id,nm(m.p1),m.s1,nm(m.p2),m.s2,nm(m.winner)]);
   });
   const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -592,7 +593,7 @@ function renderScheduleCtrl() {
       ? `<button class="act-btn mr-btn" onclick="unpostponeMatch('${m.id}')">VRATI</button>`
       : playing.includes(m) ? `<button class="act-btn mr-btn" onclick="postponeMatch('${m.id}')">ODLOŽI</button>` : '';
     return `<div class="match-row">
-      <span class="mr-id">${m.id}</span>
+      <span class="mr-id"><b>${m.num}</b>${m.id}</span>
       <span class="mr-players">${esc(m.p1)}<span class="mr-vs">vs</span>${esc(m.p2)}${isPost?' <span class="mr-vs">(odloženo)</span>':''}</span>
       ${btn}
     </div>`;

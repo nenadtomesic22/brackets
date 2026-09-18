@@ -62,6 +62,7 @@
   .round-title{font-size:0.6rem;letter-spacing:0.2em;color:var(--muted);text-align:center;padding:0 8px 10px;text-transform:uppercase;font-family:'DM Sans',sans-serif;white-space:nowrap;}
   .match-card{width:200px;border:1px solid var(--border);background:var(--card);position:relative;flex-shrink:0;cursor:default;}
   .match-card.gfc{border-color:rgba(196,135,58,0.5);}
+  .match-card.bye{opacity:0.35;}
   .mp{display:flex;align-items:center;padding:7px 10px;font-size:0.78rem;border-bottom:1px solid var(--border);min-height:30px;}
   .mp:last-child{border-bottom:none;}
   .mp.win{background:rgba(43,96,232,0.1);color:var(--accent);}
@@ -70,7 +71,8 @@
   .mp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
   .mp-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.1rem;min-width:22px;text-align:right;color:var(--muted);}
   .mp.win .mp-score{color:var(--accent);}
-  .mid{position:absolute;top:-7px;left:7px;font-size:0.55rem;color:var(--muted);background:var(--card);padding:0 3px;letter-spacing:1px;font-family:'DM Sans',sans-serif;}
+  .mid{position:absolute;top:-8px;left:7px;font-size:0.6rem;color:var(--muted);background:var(--card);padding:0 4px;letter-spacing:1px;font-family:'DM Mono',monospace;}
+  .mid b{color:var(--text);font-weight:500;}
 
   /* FINALE */
   .gf-grid{display:flex;gap:80px;align-items:flex-start;}
@@ -376,7 +378,7 @@ function renderSchedule(t) {
     } else {
       matches.forEach(m => {
         const r = document.createElement('div'); r.className = 'sched-match';
-        r.innerHTML = `<span class="sched-match-id">${m.id}</span><span class="sched-match-p">${esc(m.p1)}</span><span class="sched-match-vs">VS</span><span class="sched-match-p">${esc(m.p2)}</span>`;
+        r.innerHTML = `<span class="sched-match-id">MEČ ${m.num}</span><span class="sched-match-p">${esc(m.p1)}</span><span class="sched-match-vs">VS</span><span class="sched-match-p">${esc(m.p2)}</span>`;
         d.appendChild(r);
       });
     }
@@ -418,14 +420,15 @@ function renderGF(t) {
 
 function mEl(m, isGF = false) {
   const d = document.createElement('div');
-  d.className = 'match-card' + (isGF ? ' gfc' : '');
-  d.innerHTML = `<div class="mid">${m.id}</div>${pRow(m, 1)}${pRow(m, 2)}`;
+  const isBye = m.p1 === BYE || m.p2 === BYE;
+  d.className = 'match-card' + (isGF ? ' gfc' : '') + (isBye ? ' bye' : '');
+  d.innerHTML = `<div class="mid"><b>${m.num}</b></div>${pRow(m, 1)}${pRow(m, 2)}`;
   return d;
 }
 function pRow(m, n) {
   const raw = m[`p${n}`], score = m[`s${n}`];
   const name = raw === BYE ? 'BYE' : raw;
-  const isW = m.done && raw && m.winner === raw, isL = m.done && raw && m.loser === raw;
+  const isW = m.done && raw && raw !== BYE && m.winner === raw, isL = m.done && raw && m.loser === raw;
   const cls = !raw ? 'tbd' : isW ? 'win' : isL ? 'lose' : '';
   return `<div class="mp ${cls}"><span class="mp-name">${esc(name || 'TBD')}</span><span class="mp-score">${m.done && score != null ? score : ''}</span></div>`;
 }
