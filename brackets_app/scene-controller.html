@@ -6,6 +6,7 @@
 <title>Controller - Target Sombor</title>
 <link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="engine.js"></script>
 <style>
   :root { --bg:#09090E; --surface:#12131F; --card:#1A1C2E; --border:#3C3560; --accent:#2B60E8; --accent2:#C4873A; --text:#F0EDE6; --muted:#6B7280; --gold:#C4873A; }
   :root[data-theme="light"] { --bg:#F0EDE6; --surface:#E4E1D9; --card:#D8D4CC; --border:#C4BFB5; --accent:#2B60E8; --accent2:#C4873A; --text:#09090E; --muted:#6B6560; --gold:#C4873A; }
@@ -80,6 +81,7 @@
   .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;}
   .mr-players{flex:1;font-size:0.75rem;}
   .mr-vs{color:var(--muted);font-size:0.62rem;margin:0 4px;}
+  .mr-btn{padding:3px 8px;font-size:0.55rem;flex:0;min-width:0;white-space:nowrap;}
   .mr-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;color:var(--accent);min-width:40px;text-align:right;}
   .match-tabs{display:flex;gap:0;margin-bottom:8px;}
   .match-tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
@@ -93,7 +95,7 @@
   .act-btn.danger{border-color:rgba(255,77,28,0.3);color:var(--accent2);}
   .act-btn.danger:hover{border-color:var(--accent2);}
   .act-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;}
-  .act-btn.primary:hover{background:#d4ff33;}
+  .act-btn.primary:hover{background:#4b7cf0;}
 
   .divider{height:1px;background:var(--border);margin:20px 0;}
 
@@ -113,7 +115,7 @@
   .tag button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:0.8rem;}
   .row{display:flex;gap:7px;}
   .btn{background:var(--accent);color:var(--bg);border:none;padding:9px 18px;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
-  .btn:hover{background:#d4ff33;}
+  .btn:hover{background:#4b7cf0;}
   .btn-o{background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 18px;font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
   .btn-o:hover{border-color:var(--accent);color:var(--accent);}
   .modal-actions{display:flex;gap:7px;margin-top:18px;}
@@ -178,11 +180,11 @@
 <div class="section">
   <div class="section-label">AUTO-ROTACIJA</div>
   <div class="auto-row">
-    <div><div class="auto-lbl">AUTOMATSKA IZMENA</div><div class="auto-sub">Menja scenu na svakih 30s (Žreb → Repasaž → Raspored)</div></div>
+    <div><div class="auto-lbl">AUTOMATSKA IZMENA</div><div class="auto-sub">TV menja scenu na svakih 30s (Žreb → Repasaž → Raspored)</div></div>
     <label class="toggle"><input type="checkbox" id="autoToggle" onchange="toggleAuto()"><span class="toggle-slider"></span></label>
   </div>
   <div class="progress-wrap" id="progressWrap">
-    <div class="progress-lbl"><span>SLEDEĆA SCENA</span><span id="progressSec">60s</span></div>
+    <div class="progress-lbl"><span>SLEDEĆA SCENA</span><span id="progressSec">30s</span></div>
     <div class="progress-bg"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
   </div>
 </div>
@@ -234,7 +236,7 @@
         <input type="text" id="pInput" placeholder="Ime igrača" onkeydown="if(event.key==='Enter')addP()">
         <button class="btn" onclick="addP()">DODAJ</button>
       </div>
-      <div style="font-size:0.6rem;color:var(--muted);margin-top:4px">Min 4 igrača.</div>
+      <div style="font-size:0.6rem;color:var(--muted);margin-top:4px">Min 4, max 32 igrača. Slobodna mesta (BYE) se raspoređuju tako da BYE nikad ne igra protiv BYE-a.</div>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="createTournament()">KREIRAJ</button>
@@ -265,38 +267,28 @@
 async function toggleTheme() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   const next = isLight ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
-  localStorage.setItem('ctrl-theme', next);
+  applyTheme(next);
   await sb.from('scene_state').update({ theme: next }).eq('id', 1);
+}
+function applyTheme(theme) {
+  if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+  document.getElementById('themeBtn').textContent = theme === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('ctrl-theme', theme);
 }
 (function() {
   const saved = localStorage.getItem('ctrl-theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-    const btn = document.getElementById('themeBtn');
-    if (btn) btn.textContent = saved === 'light' ? '🌙' : '☀️';
-  }
+  if (saved) applyTheme(saved);
 })();
 
 const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const BYE = "__BYE__";
-let SCENES = ['winners-1','losers','finale'];
-const SCENE_NAMES = { 'winners-1':'ŽREB 1', 'winners-2':'ŽREB 2', losers:'REPASAŽ', schedule:'RASPORED', finale:'FINALE', winners:'GLAVNI ŽREB' };
-
-function normalizeScene(s) {
-  if (s==='winners'||s==='winners-early') return 'winners-1';
-  if (s==='winners-late') return 'winners-2';
-  if (s==='losers-early'||s==='losers-late') return 'losers';
-  return s;
-}
-const AUTO_INTERVAL = 30;
+const SCENE_NAMES = { 'winners-1':'ŽREB 1', 'winners-2':'ŽREB 2', losers:'REPASAŽ', schedule:'RASPORED', finale:'FINALE' };
 
 let db = [];
-let sceneState = { tournament_id: null, scene: 'winners', auto_rotate: false };
+let sceneState = { tournament_id: null, scene: 'winners-1', auto_rotate: false };
 let activeTid = null;
 let pendingId = null;
 let newPs = [];
@@ -305,30 +297,22 @@ let autoSeconds = AUTO_INTERVAL;
 let matchTab = 'w';
 
 const getT = () => db.find(t => t.id === activeTid);
+const scenesNow = () => { const t = getT(); return scenesFor(t ? nextPow2(t.seed.length) : 16); };
 
 // ─── INIT ────────────────────────────────────────────────────
 async function init() {
   const { data: tData } = await sb.from('tournaments').select('*').order('date', { ascending: false });
-  db = tData || [];
-  db.forEach(t => { t._routes = buildRoutingTable(nextPow2(t.seed.length)); });
+  db = (tData || []).filter(t => Array.isArray(t.seed) && t.seed.length);
 
   const { data: sData } = await sb.from('scene_state').select('*').eq('id',1).single();
   if (sData) {
     sceneState = sData;
     sceneState.scene = normalizeScene(sceneState.scene);
     activeTid = sData.tournament_id;
-    if (sData.theme) {
-      document.documentElement.setAttribute('data-theme', sData.theme);
-      document.getElementById('themeBtn').textContent = sData.theme === 'light' ? '🌙' : '☀️';
-      localStorage.setItem('ctrl-theme', sData.theme);
-    }
+    if (sData.theme) applyTheme(sData.theme);
   }
 
-  renderTournaments();
-  updateSceneButtons(getT());
-  renderSceneUI();
-  renderMatchList();
-  renderScheduleCtrl();
+  renderAll();
   subscribeRealtime();
   subscribeSceneState();
 
@@ -336,16 +320,25 @@ async function init() {
   document.getElementById('statusTxt').textContent = 'LIVE';
 }
 
+function renderAll() {
+  renderTournaments();
+  updateSceneButtons(getT());
+  renderSceneUI();
+  renderMatchList();
+  renderScheduleCtrl();
+}
+
 // ─── TOURNAMENTS ─────────────────────────────────────────────
 function renderTournaments() {
   const list = document.getElementById('tList');
   if (!db.length) { list.innerHTML = '<div class="no-t">Nema turnira u bazi</div>'; return; }
   list.innerHTML = db.map(t => {
+    replayAll(t);
     const ch = getChamp(t);
     return `<div class="t-item ${sceneState.tournament_id===t.id?'active':''}" onclick="selectTournament('${t.id}')">
       <div>
-        <div class="t-item-name">${t.name}</div>
-        <div class="t-item-meta">${t.date||'—'} · ${t.players.length} igrača${ch?' · 🏆 '+ch:''}</div>
+        <div class="t-item-name">${esc(t.name)}</div>
+        <div class="t-item-meta">${esc(t.date||'—')} · ${t.players.length} igrača${ch?' · 🏆 '+esc(ch):''}</div>
       </div>
       <span class="t-item-check">✓</span>
     </div>`;
@@ -355,61 +348,42 @@ function renderTournaments() {
 async function selectTournament(id) {
   activeTid = id;
   sceneState.tournament_id = id;
+  const t = getT();
+  // scena koja ne postoji za ovu veličinu (npr. ŽREB 2 za 16 igrača) → prva scena
+  if (t && !scenesFor(nextPow2(t.seed.length)).includes(sceneState.scene)) sceneState.scene = 'winners-1';
   await pushSceneState();
-  renderTournaments();
-  updateSceneButtons(getT());
-  renderSceneUI();
-  renderMatchList();
-  renderScheduleCtrl();
+  renderAll();
 }
 
 function updateSceneButtons(t) {
   const is32 = t && nextPow2(t.seed.length) === 32;
   const container = document.querySelector('.scene-btns');
-  if (is32) {
-    SCENES = ['winners-1','winners-2','losers','schedule','finale'];
-    container.style.gridTemplateColumns = '1fr 1fr';
-    container.innerHTML = `
-      <button class="scene-btn" data-scene="winners-1" onclick="setScene('winners-1')"><span class="scene-icon">🏆</span>ŽREB 1</button>
-      <button class="scene-btn" data-scene="winners-2" onclick="setScene('winners-2')"><span class="scene-icon">🏆</span>ŽREB 2</button>
-      <button class="scene-btn" data-scene="losers"    onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
-      <button class="scene-btn" data-scene="schedule"  onclick="setScene('schedule')"><span class="scene-icon">📋</span>RASPORED</button>
-      <button class="scene-btn" data-scene="finale"    onclick="setScene('finale')" style="grid-column:span 2"><span class="scene-icon">🥇</span>FINALE</button>`;
-  } else {
-    SCENES = ['winners-1','losers','schedule','finale'];
-    container.style.gridTemplateColumns = '1fr 1fr';
-    container.innerHTML = `
-      <button class="scene-btn" data-scene="winners-1" onclick="setScene('winners-1')"><span class="scene-icon">🏆</span>GLAVNI ŽREB</button>
-      <button class="scene-btn" data-scene="losers"    onclick="setScene('losers')"><span class="scene-icon">⚔️</span>REPASAŽ</button>
-      <button class="scene-btn" data-scene="schedule"  onclick="setScene('schedule')"><span class="scene-icon">📋</span>RASPORED</button>
-      <button class="scene-btn" data-scene="finale"    onclick="setScene('finale')"><span class="scene-icon">🥇</span>FINALE</button>`;
-  }
+  const btn = (scene, icon, label, extra='') => `<button class="scene-btn" data-scene="${scene}" onclick="setScene('${scene}')" ${extra}><span class="scene-icon">${icon}</span>${label}</button>`;
+  container.style.gridTemplateColumns = '1fr 1fr';
+  container.innerHTML = is32
+    ? btn('winners-1','🏆','ŽREB 1') + btn('winners-2','🏆','ŽREB 2') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE','style="grid-column:span 2"')
+    : btn('winners-1','🏆','GLAVNI ŽREB') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE');
 }
 
 // ─── SCENE ───────────────────────────────────────────────────
 function renderSceneUI() {
   const sc = normalizeScene(sceneState.scene);
   document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('active', b.dataset.scene === sc));
-  document.getElementById('npName').textContent = SCENE_NAMES[sc] || '—';
-  const tog = document.getElementById('autoToggle');
-  tog.checked = sceneState.auto_rotate;
-  document.getElementById('progressWrap').classList.toggle('visible', sceneState.auto_rotate);
-  if (sceneState.auto_rotate) startAutoTimer(); else stopAutoTimer();
+  const t = getT(), is32 = t && nextPow2(t.seed.length) === 32;
+  document.getElementById('npName').textContent = (sc === 'winners-1' && !is32) ? 'GLAVNI ŽREB' : (SCENE_NAMES[sc] || '—');
+  document.getElementById('autoToggle').checked = !!sceneState.auto_rotate;
+  document.getElementById('progressWrap').classList.toggle('visible', !!sceneState.auto_rotate);
+  if (sceneState.auto_rotate) startCountdown(); else stopCountdown();
 }
 
 async function setScene(scene) {
   sceneState.scene = scene;
   await pushSceneState();
   renderSceneUI();
-  if (sceneState.auto_rotate) resetAutoTimer();
 }
 
-function nextScene(autoOnly=false) {
-  const pool = autoOnly ? SCENES.filter(s => s !== 'finale') : SCENES;
-  const i = pool.indexOf(sceneState.scene);
-  setScene(pool[(i+1) % pool.length]);
-}
-function prevScene() { const i=SCENES.indexOf(sceneState.scene); setScene(SCENES[(i-1+SCENES.length)%SCENES.length]); }
+function nextScene() { const p = scenesNow(); const i = p.indexOf(sceneState.scene); setScene(p[(i+1) % p.length]); }
+function prevScene() { const p = scenesNow(); const i = p.indexOf(sceneState.scene); setScene(p[(i-1+p.length) % p.length]); }
 
 async function toggleAuto() {
   sceneState.auto_rotate = document.getElementById('autoToggle').checked;
@@ -418,43 +392,44 @@ async function toggleAuto() {
 }
 
 async function pushSceneState() {
-  await sb.from('scene_state').update({
+  const { error } = await sb.from('scene_state').update({
     tournament_id: sceneState.tournament_id,
     scene: sceneState.scene,
     auto_rotate: sceneState.auto_rotate,
     updated_at: new Date().toISOString()
   }).eq('id',1);
+  if (error) console.error(error);
 }
 
 function subscribeSceneState() {
   sb.channel('scene_ctrl')
     .on('postgres_changes', { event:'UPDATE', schema:'public', table:'scene_state' }, p => {
+      const prev = sceneState;
       sceneState = p.new;
       sceneState.scene = normalizeScene(sceneState.scene);
-      renderSceneUI();
-      renderTournaments();
+      if (sceneState.theme && sceneState.theme !== prev.theme) applyTheme(sceneState.theme);
+      if (sceneState.tournament_id !== activeTid) { activeTid = sceneState.tournament_id; renderAll(); }
+      else { renderSceneUI(); renderTournaments(); }
     })
     .subscribe();
 }
 
-// ─── AUTO TIMER ──────────────────────────────────────────────
-function startAutoTimer() {
-  stopAutoTimer(); autoSeconds = AUTO_INTERVAL; updateProgressBar();
+// ─── COUNTDOWN (samo indikator — scenu menja TV) ─────────────
+// Svaka promena scene (od TV-a ili ručna) stiže preko realtime-a i resetuje brojač.
+function startCountdown() {
+  stopCountdown(); autoSeconds = AUTO_INTERVAL; updateProgressBar();
   autoTimer = setInterval(() => {
-    autoSeconds--;
+    if (autoSeconds > 0) autoSeconds--;
     updateProgressBar();
-    if (autoSeconds <= 0) { nextScene(true); autoSeconds = AUTO_INTERVAL; }
   }, 1000);
 }
-function stopAutoTimer() {
+function stopCountdown() {
   if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  document.getElementById('progressFill').style.width = '100%';
-  document.getElementById('progressSec').textContent = `${AUTO_INTERVAL}s`;
+  autoSeconds = AUTO_INTERVAL; updateProgressBar();
 }
-function resetAutoTimer() { autoSeconds = AUTO_INTERVAL; updateProgressBar(); }
 function updateProgressBar() {
   document.getElementById('progressFill').style.width = `${(autoSeconds/AUTO_INTERVAL)*100}%`;
-  document.getElementById('progressSec').textContent = `${autoSeconds}s`;
+  document.getElementById('progressSec').textContent = autoSeconds > 0 ? `${autoSeconds}s` : 'čeka TV…';
 }
 
 // ─── MATCH LIST ──────────────────────────────────────────────
@@ -479,14 +454,15 @@ function renderMatchList() {
 
   list.innerHTML = matches.map(m => {
     const isBye = m.p1 === BYE || m.p2 === BYE;
+    const clickable = isPlayable(m);
     const p1 = m.p1 === BYE ? 'BYE' : (m.p1 || 'TBD');
     const p2 = m.p2 === BYE ? 'BYE' : (m.p2 || 'TBD');
     const score = m.done && !isBye ? `${m.s1}:${m.s2}` : '';
-    return `<div class="match-row ${m.done&&!isBye?'played':''} ${isBye?'bye-row':''}"
-      onclick="${isBye?'':'openScoreModal(\''+m.id+'\')'}"
+    return `<div class="match-row ${m.done&&!isBye?'played':''} ${!clickable?'bye-row':''}"
+      onclick="${clickable?'openScoreModal(\''+m.id+'\')':''}"
     >
       <span class="mr-id">${m.id}</span>
-      <span class="mr-players">${p1}<span class="mr-vs">vs</span>${p2}</span>
+      <span class="mr-players">${esc(p1)}<span class="mr-vs">vs</span>${esc(p2)}</span>
       <span class="mr-score">${score}</span>
     </div>`;
   }).join('');
@@ -495,31 +471,30 @@ function renderMatchList() {
 // ─── SCORE SUBMIT ────────────────────────────────────────────
 function openScoreModal(id) {
   const t = getT(); if (!t) return;
-  const m = findM(t, id); if (!m) return;
-  if (m.p1 === BYE || m.p2 === BYE) return;
+  const m = findM(t, id); if (!m || !isPlayable(m)) return;
   pendingId = id;
-  document.getElementById('sp1n').textContent = m.p1 || 'TBD';
-  document.getElementById('sp2n').textContent = m.p2 || 'TBD';
+  document.getElementById('sp1n').textContent = m.p1;
+  document.getElementById('sp2n').textContent = m.p2;
   document.getElementById('sp1').value = m.s1 ?? 0;
   document.getElementById('sp2').value = m.s2 ?? 0;
-  document.getElementById('sInfo').innerHTML = `Meč: <strong>${id}</strong>`+(m.done?'<br><span style="color:var(--accent2)">⚠ Već odigran — izmena rekalkuliše bracket</span>':'');
+  document.getElementById('sInfo').innerHTML = `Meč: <strong>${id}</strong>`+(m.done?'<br><span style="color:var(--accent2)">⚠ Već odigran — izmena poništava rezultate mečeva koji zavise od ovog</span>':'');
   openOv('scoreModal');
 }
 
 async function submitScore() {
-  const t = getT(); const m = findM(t, pendingId); if (!m) return;
+  const t = getT(); if (!t) return;
+  const m = findM(t, pendingId); if (!m || !isPlayable(m)) return;
   const s1 = parseInt(document.getElementById('sp1').value)||0;
   const s2 = parseInt(document.getElementById('sp2').value)||0;
   if (s1 === s2) { alert('Rezultat ne može biti nerešen!'); return; }
-  m.s1=s1; m.s2=s2; m.done=true;
-  m.winner = s1>s2 ? (m.p1||'TBD') : (m.p2||'TBD');
-  m.loser  = s1>s2 ? (m.p2||'TBD') : (m.p1||'TBD');
-  if (t.postponed) t.postponed = t.postponed.filter(id => id !== pendingId);
+  applyResult(m, s1, s2);
+  t.postponed = (t.postponed || []).filter(id => id !== pendingId);
   replayAll(t);
   await updateTournament(t);
   closeOv('scoreModal');
   renderMatchList();
   renderScheduleCtrl();
+  renderTournaments();
 }
 
 // ─── NEW TOURNAMENT ──────────────────────────────────────────
@@ -533,11 +508,12 @@ function openNewModal() {
 function addP() {
   const inp=document.getElementById('pInput'),n=inp.value.trim();
   if (!n) return; if (newPs.includes(n)){alert('Igrač već postoji!');return;}
+  if (n === 'BYE' || n === BYE) { alert('To ime je rezervisano.'); return; }
   newPs.push(n); inp.value=''; renderTags(); inp.focus();
 }
 function removeP(i){newPs.splice(i,1);renderTags();}
 function renderTags(){
-  document.getElementById('pTags').innerHTML=newPs.map((p,i)=>`<div class="tag">${p}<button onclick="removeP(${i})">✕</button></div>`).join('');
+  document.getElementById('pTags').innerHTML=newPs.map((p,i)=>`<div class="tag">${esc(p)}<button onclick="removeP(${i})">✕</button></div>`).join('');
 }
 
 async function createTournament() {
@@ -545,25 +521,28 @@ async function createTournament() {
   if (!name){alert('Unesi naziv!');return;}
   if (newPs.length<4){alert('Minimum 4 igrača!');return;}
   if (newPs.length>32){alert('Maksimum 32 igrača!');return;}
-  const seed=[...newPs]; shuffle(seed);
-  const size=nextPow2(seed.length);
-  for (let i=seed.length;i<size;i++){const pos=Math.floor(Math.random()*(seed.length+1));seed.splice(pos,0,BYE);}
-  const numBoards=parseInt(document.getElementById('inBoards').value)||2;
-  const t={id:crypto.randomUUID(),name,date:document.getElementById('inDate').value,players:[...newPs],seed,wB:[],lB:[],gf:null,gfr:null,num_boards:numBoards,postponed:[]};
-  genBracket(t); replayAll(t); resolveByesReplay(t);
+  const numBoards=Math.max(1, parseInt(document.getElementById('inBoards').value)||2);
+  const t={id:crypto.randomUUID(),name,date:document.getElementById('inDate').value,players:[...newPs],seed:makeSeed(newPs),wB:[],lB:[],gf:null,gfr:null,num_boards:numBoards,postponed:[]};
+  genBracket(t); replayAll(t);
   const {data,error}=await sb.from('tournaments').insert([{id:t.id,name:t.name,date:t.date,players:t.players,seed:t.seed,wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr,num_boards:numBoards,postponed:[]}]).select();
-  if (error){console.error(error);alert('Greška!');return;}
-  db.unshift(data[0]);
-  activeTid=data[0].id; sceneState.tournament_id=data[0].id;
+  if (error){console.error(error);alert('Greška: '+error.message);return;}
+  if (!db.some(x => x.id === data[0].id)) db.unshift(data[0]);
+  activeTid=data[0].id; sceneState.tournament_id=data[0].id; sceneState.scene='winners-1';
   await pushSceneState();
-  renderTournaments(); renderMatchList(); renderScheduleCtrl(); closeOv('newModal');
+  closeOv('newModal');
+  renderAll();
 }
 
 // ─── REALTIME ────────────────────────────────────────────────
 function subscribeRealtime() {
   sb.channel('tournaments_ctrl')
     .on('postgres_changes',{event:'*',schema:'public',table:'tournaments'},payload=>{
+      if (payload.eventType === 'DELETE') {
+        db = db.filter(t => t.id !== payload.old?.id);
+        renderAll(); return;
+      }
       const u=payload.new;
+      if (!u?.id || !Array.isArray(u.seed)) return;
       const idx=db.findIndex(t=>t.id===u.id);
       if (idx!==-1) db[idx]=u; else db.unshift(u);
       renderTournaments(); renderMatchList(); renderScheduleCtrl();
@@ -575,159 +554,71 @@ function subscribeRealtime() {
 async function doReset() {
   if (!confirm('Resetovati turnir? Svi rezultati biće obrisani!')) return;
   const t=getT(); if (!t) return;
-  t.wB=[]; t.lB=[]; t.gf=null; t.gfr=null;
-  genBracket(t);
+  t.wB=[]; t.lB=[]; t.gf=null; t.gfr=null; t.postponed=[];
+  genBracket(t); replayAll(t);
   await updateTournament(t);
-  renderMatchList();
+  renderAll();
 }
 
 function doExport() {
   const t=getT(); if (!t) return;
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
   const rows=[['Bracket','Meč','Igrač 1','Score 1','Igrač 2','Score 2','Pobednik']];
   allMatches(t).forEach(m=>{
     const br=m.id.startsWith('W')?'Winners':m.id.startsWith('L')?'Losers':'Grand Final';
-    rows.push([br,m.id,m.p1||'',m.s1??'',m.p2||'',m.s2??'',m.winner||'']);
+    const nm=v=>v===BYE?'BYE':v;
+    rows.push([br,m.id,nm(m.p1),m.s1,nm(m.p2),m.s2,nm(m.winner)]);
   });
-  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+  const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download=`${t.name.replace(/\s/g,'_')}.csv`;a.click();
 }
 
 async function updateTournament(t) {
   const {error}=await sb.from('tournaments').update({wB:t.wB,lB:t.lB,gf:t.gf,gfr:t.gfr,postponed:t.postponed||[]}).eq('id',t.id);
-  if (error) console.error(error);
+  if (error) { console.error(error); alert('Greška pri čuvanju: '+error.message); }
 }
 
-function getReadyMatches(t) {
-  const ready=[];
-  for (const r of (t.wB||[])) for (const m of r)
-    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
-  for (const r of (t.lB||[])) for (const m of r)
-    if (!m.done&&m.p1&&m.p2&&m.p1!==BYE&&m.p2!==BYE) ready.push(m);
-  if (t.gf&&!t.gf.done&&t.gf.p1&&t.gf.p2) ready.push(t.gf);
-  if (t.gfr&&!t.gfr.done&&t.gfr.p1&&t.gfr.p2) ready.push(t.gfr);
-  return ready;
-}
-
-function getScheduleQueue(t) {
-  const numBoards = t.num_boards || 2;
-  const allReady = getReadyMatches(t);
-  // filter out postponed IDs that are no longer ready (already played)
-  const postponedIds = (t.postponed || []).filter(id => allReady.some(m => m.id === id));
-  const postponedMatches = postponedIds.map(id => allReady.find(m => m.id === id)).filter(Boolean);
-  const normal = allReady.filter(m => !postponedIds.includes(m.id));
-  const playing = normal.slice(0, numBoards);
-  const next = [...postponedMatches, ...normal.slice(numBoards)].slice(0, numBoards);
-  return { playing, next };
-}
-
+// ─── RASPORED ────────────────────────────────────────────────
 function renderScheduleCtrl() {
   const t=getT();
   const el=document.getElementById('scheduleCtrl');
   if (!t){el.innerHTML='<div class="no-t" style="padding:10px">Izaberi turnir</div>';return;}
   replayAll(t);
-  const {playing,next}=getScheduleQueue(t);
-  const row=(m,canPostpone)=>`
-    <div class="match-row">
+  const {playing,next,postponed}=getScheduleQueue(t);
+  const row=(m)=>{
+    const isPost = postponed.includes(m);
+    const btn = isPost
+      ? `<button class="act-btn mr-btn" onclick="unpostponeMatch('${m.id}')">VRATI</button>`
+      : playing.includes(m) ? `<button class="act-btn mr-btn" onclick="postponeMatch('${m.id}')">ODLOŽI</button>` : '';
+    return `<div class="match-row">
       <span class="mr-id">${m.id}</span>
-      <span class="mr-players">${m.p1||'TBD'}<span class="mr-vs">vs</span>${m.p2||'TBD'}</span>
-      ${canPostpone?`<button class="act-btn" style="padding:3px 8px;font-size:0.55rem;flex:0;min-width:0" onclick="postponeMatch('${m.id}')">ODLOŽI</button>`:''}
+      <span class="mr-players">${esc(m.p1)}<span class="mr-vs">vs</span>${esc(m.p2)}${isPost?' <span class="mr-vs">(odloženo)</span>':''}</span>
+      ${btn}
     </div>`;
+  };
   el.innerHTML=`
-    <div class="section-label" style="color:var(--accent);margin:0 0 4px">IGRA SE</div>
-    ${playing.length?playing.map(m=>row(m,true)).join(''):'<div class="no-t" style="padding:8px">Nema aktivnih</div>'}
+    <div class="section-label" style="color:var(--accent);margin:0 0 4px">IGRA SE (${t.num_boards||2} table)</div>
+    ${playing.length?playing.map(row).join(''):'<div class="no-t" style="padding:8px">Nema aktivnih</div>'}
     <div class="section-label" style="color:var(--muted);margin:10px 0 4px">SLEDEĆI</div>
-    ${next.length?next.map(m=>row(m,false)).join(''):'<div class="no-t" style="padding:8px">Nema sledećih</div>'}`;
+    ${next.length?next.map(row).join(''):'<div class="no-t" style="padding:8px">Nema sledećih</div>'}`;
 }
 
 async function postponeMatch(matchId) {
-  const t = getT();
-  if (!t) return;
+  const t = getT(); if (!t) return;
   const current = t.postponed || [];
-  if (!current.includes(matchId))
-    t.postponed = [matchId, ...current];
+  if (!current.includes(matchId)) t.postponed = [matchId, ...current];
+  await updateTournament(t);
+  renderScheduleCtrl();
+}
+async function unpostponeMatch(matchId) {
+  const t = getT(); if (!t) return;
+  t.postponed = (t.postponed || []).filter(id => id !== matchId);
   await updateTournament(t);
   renderScheduleCtrl();
 }
 
-// ─── BRACKET ENGINE (full copy from index.html) ──────────────
-function mkM(id,p1=null,p2=null){return{id,p1,p2,s1:null,s2:null,winner:null,loser:null,done:false,nextWin:null,nextLose:null};}
-
-function buildRoutingTable(size) {
-  const routes={};
-  if (size===4){
-    routes['W_R1_M0']={win:{b:'W',r:1,m:0,s:1},lose:{b:'L',r:0,m:0,s:1}};
-    routes['W_R1_M1']={win:{b:'W',r:1,m:0,s:2},lose:{b:'L',r:0,m:0,s:2}};
-    routes['W_R2_M0']={win:{b:'GF',s:1},lose:{b:'L',r:1,m:0,s:2}};
-    routes['L_R1_M0']={win:{b:'L',r:1,m:0,s:1},lose:null};
-    routes['L_R2_M0']={win:{b:'GF',s:2},lose:null};
-    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
-    routes['GFR']={win:null,lose:null};
-  } else if (size===8){
-    routes['W_R1_M0']={win:{b:'W',r:1,m:0,s:1},lose:{b:'L',r:0,m:0,s:1}};
-    routes['W_R1_M1']={win:{b:'W',r:1,m:0,s:2},lose:{b:'L',r:0,m:0,s:2}};
-    routes['W_R1_M2']={win:{b:'W',r:1,m:1,s:1},lose:{b:'L',r:0,m:1,s:1}};
-    routes['W_R1_M3']={win:{b:'W',r:1,m:1,s:2},lose:{b:'L',r:0,m:1,s:2}};
-    routes['W_R2_M0']={win:{b:'W',r:2,m:0,s:1},lose:{b:'L',r:1,m:0,s:2}};
-    routes['W_R2_M1']={win:{b:'W',r:2,m:0,s:2},lose:{b:'L',r:1,m:1,s:2}};
-    routes['W_R3_M0']={win:{b:'GF',s:1},lose:{b:'L',r:3,m:0,s:2}};
-    routes['L_R1_M0']={win:{b:'L',r:1,m:0,s:1},lose:null};
-    routes['L_R1_M1']={win:{b:'L',r:1,m:1,s:1},lose:null};
-    routes['L_R2_M0']={win:{b:'L',r:2,m:0,s:1},lose:null};
-    routes['L_R2_M1']={win:{b:'L',r:2,m:0,s:2},lose:null};
-    routes['L_R3_M0']={win:{b:'L',r:3,m:0,s:1},lose:null};
-    routes['L_R4_M0']={win:{b:'GF',s:2},lose:null};
-    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
-    routes['GFR']={win:null,lose:null};
-  } else if (size===16){
-    for(let i=0;i<8;i++)routes[`W_R1_M${i}`]={win:{b:'W',r:1,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:0,m:Math.floor(i/2),s:(i%2===0?1:2)}};
-    for(let i=0;i<4;i++)routes[`W_R2_M${i}`]={win:{b:'W',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:1,m:i,s:2}};
-    for(let i=0;i<2;i++)routes[`W_R3_M${i}`]={win:{b:'W',r:3,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:3,m:i,s:2}};
-    routes['W_R4_M0']={win:{b:'GF',s:1},lose:{b:'L',r:5,m:0,s:2}};
-    for(let i=0;i<4;i++)routes[`L_R1_M${i}`]={win:{b:'L',r:1,m:i,s:1},lose:null};
-    for(let i=0;i<4;i++)routes[`L_R2_M${i}`]={win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
-    for(let i=0;i<2;i++)routes[`L_R3_M${i}`]={win:{b:'L',r:3,m:i,s:1},lose:null};
-    for(let i=0;i<2;i++)routes[`L_R4_M${i}`]={win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
-    routes['L_R4_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
-    routes['L_R5_M0']={win:{b:'L',r:5,m:0,s:1},lose:null};
-    routes['L_R6_M0']={win:{b:'GF',s:2},lose:null};
-    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
-    routes['GFR']={win:null,lose:null};
-  } else if (size===32){
-    for(let i=0;i<16;i++)routes[`W_R1_M${i}`]={win:{b:'W',r:1,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:0,m:Math.floor(i/2),s:(i%2===0?1:2)}};
-    for(let i=0;i<8;i++)routes[`W_R2_M${i}`]={win:{b:'W',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:1,m:i,s:2}};
-    for(let i=0;i<4;i++)routes[`W_R3_M${i}`]={win:{b:'W',r:3,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:{b:'L',r:3,m:i,s:2}};
-    for(let i=0;i<2;i++)routes[`W_R4_M${i}`]={win:{b:'W',r:4,m:0,s:(i===0?1:2)},lose:{b:'L',r:5,m:i,s:2}};
-    routes['W_R5_M0']={win:{b:'GF',s:1},lose:{b:'L',r:7,m:0,s:2}};
-    for(let i=0;i<8;i++)routes[`L_R1_M${i}`]={win:{b:'L',r:1,m:i,s:1},lose:null};
-    for(let i=0;i<8;i++)routes[`L_R2_M${i}`]={win:{b:'L',r:2,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
-    for(let i=0;i<4;i++)routes[`L_R3_M${i}`]={win:{b:'L',r:3,m:i,s:1},lose:null};
-    for(let i=0;i<4;i++)routes[`L_R4_M${i}`]={win:{b:'L',r:4,m:Math.floor(i/2),s:(i%2===0?1:2)},lose:null};
-    for(let i=0;i<2;i++)routes[`L_R5_M${i}`]={win:{b:'L',r:5,m:i,s:1},lose:null};
-    for(let i=0;i<2;i++)routes[`L_R6_M${i}`]={win:{b:'L',r:6,m:0,s:(i===0?1:2)},lose:null};
-    routes['L_R7_M0']={win:{b:'L',r:7,m:0,s:1},lose:null};
-    routes['L_R8_M0']={win:{b:'GF',s:2},lose:null};
-    routes['GF']={win:{b:'GFR',s:1},lose:{b:'GFR',s:2}};
-    routes['GFR']={win:null,lose:null};
-  }
-  return routes;
-}
-
-function genBracket(t){const players=[...t.seed],size=nextPow2(players.length);const routes=buildRoutingTable(size);t._routes=routes;t._size=size;t.wB=[];let r0=[];for(let i=0;i<size;i+=2){const id=`W_R1_M${i/2}`;const m=mkM(id,players[i],players[i+1]);applyRoutes(m,routes);r0.push(m);}t.wB.push(r0);let cur=r0.length,wr=2;while(cur>1){cur=Math.ceil(cur/2);const round=[];for(let i=0;i<cur;i++){const id=`W_R${wr}_M${i}`;const m=mkM(id);applyRoutes(m,routes);round.push(m);}t.wB.push(round);wr++;}t.lB=buildLStructure(size,routes);t.gf=mkM('GF');applyRoutes(t.gf,routes);t.gfr=mkM('GFR');applyRoutes(t.gfr,routes);}
-function applyRoutes(m,routes){const r=routes[m.id];if(!r)return;m.nextWin=r.win||null;m.nextLose=r.lose||null;}
-function buildLStructure(size,routes){const lRounds=[];let r=0;while(true){const ids=Object.keys(routes).filter(k=>k.startsWith(`L_R${r+1}_`));if(!ids.length)break;const round=ids.sort((a,b)=>parseInt(a.split('_M')[1])-parseInt(b.split('_M')[1])).map(id=>{const m=mkM(id);applyRoutes(m,routes);return m;});lRounds.push(round);r++;}return lRounds;}
-function replayAll(t){const results=collectResults(t);genBracket(t);for(const res of results){const m=findM(t,res.id);if(!m)continue;m.s1=res.s1;m.s2=res.s2;if(m.p1===BYE||m.p2===BYE){m.winner=m.p1===BYE?m.p2:m.p1;m.loser=BYE;m.done=true;}else{m.done=true;m.winner=res.s1>res.s2?(m.p1||res.p1):(m.p2||res.p2);m.loser=res.s1>res.s2?(m.p2||res.p2):(m.p1||res.p1);if(!m.winner)m.winner=res.winner;if(!m.loser)m.loser=res.loser;}propagate(t,m);}resolveByesReplay(t);}
-function collectResults(t){return allMatches(t).filter(m=>m.done&&(m.winner||m.p1===BYE||m.p2===BYE)).map(m=>({id:m.id,s1:m.s1,s2:m.s2,winner:m.winner,loser:m.loser,p1:m.p1,p2:m.p2}));}
-function resolveByesReplay(t){let changed=true;while(changed){changed=false;for(const m of allMatches(t)){if(m.done)continue;if(m.p1===BYE&&m.p2===BYE){m.done=true;continue;}if(m.p1===BYE||m.p2===BYE){m.winner=m.p1===BYE?m.p2:m.p1;m.loser=null;m.done=true;propagate(t,m);changed=true;}}}}
-function propagate(t,m){if(m.winner)placeInSlot(t,m.nextWin,m.winner);if(m.loser)placeInSlot(t,m.nextLose,m.loser);}
-function placeInSlot(t,ref,player){if(!ref||!player)return;const m=getMatchByRef(t,ref);if(!m)return;if(ref.s===1)m.p1=player;else m.p2=player;}
-function getMatchByRef(t,ref){if(!ref)return null;if(ref.b==='GF')return t.gf;if(ref.b==='GFR')return t.gfr;if(ref.b==='W')return t.wB[ref.r]?.[ref.m]||null;if(ref.b==='L')return t.lB[ref.r]?.[ref.m]||null;return null;}
-function allMatches(t){return[...(t.wB||[]).flat(),...(t.lB||[]).flat(),t.gf,t.gfr].filter(Boolean);}
-function findM(t,id){if(!id)return null;if(id==='GF')return t.gf;if(id==='GFR')return t.gfr;for(const r of t.wB)for(const m of r)if(m.id===id)return m;for(const r of t.lB)for(const m of r)if(m.id===id)return m;return null;}
-function nextPow2(n){let x=1;while(x<n)x*=2;return x;}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
-function getChamp(t){if(!t.gf||!t.gf.done)return null;if(t.gf.winner===t.gf.p1)return t.gf.winner;if(t.gfr&&t.gfr.done)return t.gfr.winner;return null;}
-
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function openOv(id){document.getElementById(id).classList.add('open');}
 function closeOv(id){document.getElementById(id).classList.remove('open');}
 

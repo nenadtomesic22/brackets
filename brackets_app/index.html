@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Target Sombor - TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="engine.js"></script>
+<style>
+  :root {
+    --bg:      #09090E;
+    --surface: #12131F;
+    --card:    #1A1C2E;
+    --border:  #3C3560;
+    --accent:  #2B60E8;
+    --accent2: #C4873A;
+    --text:    #F0EDE6;
+    --muted:   #6B7280;
+    --gold:    #C4873A;
+  }
+  :root[data-theme="light"] {
+    --bg:      #F0EDE6;
+    --surface: #E4E1D9;
+    --card:    #D8D4CC;
+    --border:  #C4BFB5;
+    --accent:  #2B60E8;
+    --accent2: #C4873A;
+    --text:    #09090E;
+    --muted:   #6B6560;
+    --gold:    #C4873A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;display:flex;flex-direction:column;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 20% 50%,rgba(43,96,232,0.06) 0%,transparent 60%),
+               radial-gradient(ellipse at 80% 20%,rgba(196,135,58,0.04) 0%,transparent 50%);}
+
+  /* TV HEADER */
+  .tv-header{display:flex;align-items:center;gap:20px;padding:14px 32px;border-bottom:1px solid var(--border);position:relative;z-index:10;flex-shrink:0;}
+  .logo{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.5rem;letter-spacing:0.1em;color:var(--text);flex-shrink:0;}
+  .tv-tournament-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.1rem;letter-spacing:0.08em;color:var(--muted);}
+  .tv-scene-badge{margin-left:auto;font-size:0.6rem;letter-spacing:2px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+  /* Svaka scena zauzima ceo prostor ispod headera; sadržaj (.fit) se
+     skalira preko CSS zoom-a kad je viši ili širi od ekrana. */
+  main{position:relative;z-index:1;flex:1;min-height:0;}
+  .scene{height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .scene[hidden]{display:none;}
+  .fit{padding:24px 32px;}
+  .fit.full{width:100%;}
+
+  /* BRACKET LAYOUT */
+  .blabel{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;letter-spacing:0.15em;color:var(--accent);margin-bottom:16px;text-transform:uppercase;}
+  .blabel.lb{color:var(--accent2);}
+  .blabel.gfl{color:var(--gold);}
+  .rounds{display:flex;align-items:flex-start;gap:100px;}
+  .round-col{display:flex;flex-direction:column;flex-shrink:0;}
+  .round-title{font-size:0.6rem;letter-spacing:0.2em;color:var(--muted);text-align:center;padding:0 8px 10px;text-transform:uppercase;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+  .match-card{width:200px;border:1px solid var(--border);background:var(--card);position:relative;flex-shrink:0;cursor:default;}
+  .match-card.gfc{border-color:rgba(196,135,58,0.5);}
+  .mp{display:flex;align-items:center;padding:7px 10px;font-size:0.78rem;border-bottom:1px solid var(--border);min-height:30px;}
+  .mp:last-child{border-bottom:none;}
+  .mp.win{background:rgba(43,96,232,0.1);color:var(--accent);}
+  .mp.lose{color:var(--muted);text-decoration:line-through;}
+  .mp.tbd{color:var(--muted);font-style:italic;}
+  .mp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+  .mp-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.1rem;min-width:22px;text-align:right;color:var(--muted);}
+  .mp.win .mp-score{color:var(--accent);}
+  .mid{position:absolute;top:-7px;left:7px;font-size:0.55rem;color:var(--muted);background:var(--card);padding:0 3px;letter-spacing:1px;font-family:'DM Sans',sans-serif;}
+
+  /* FINALE */
+  .gf-grid{display:flex;gap:80px;align-items:flex-start;}
+  .gf-col{display:flex;flex-direction:column;gap:20px;}
+  .gf-lbl{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.75rem;letter-spacing:3px;margin-bottom:6px;}
+  .gf-note{font-size:0.7rem;color:var(--muted);margin-top:10px;line-height:1.8;max-width:260px;}
+  .champ-box{margin-top:8px;padding:20px 30px;border:1px solid var(--gold);background:rgba(196,135,58,0.06);display:inline-block;}
+  .champ-lbl{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.75rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .champ-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:2.2rem;letter-spacing:0.08em;}
+
+  /* SCHEDULE SCENE */
+  .sched-wrap{display:flex;gap:48px;justify-content:center;align-items:stretch;padding:40px;}
+  .sched-box{flex:1;max-width:720px;border:1px solid var(--border);background:var(--card);padding:40px 48px;}
+  .sched-box-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.3rem;letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+  .sched-match{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid rgba(60,53,96,0.4);}
+  .sched-match:last-child{border-bottom:none;}
+  .sched-match-id{font-size:0.75rem;color:var(--muted);min-width:80px;font-family:'DM Mono',monospace;}
+  .sched-match-p{flex:1;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.6rem;letter-spacing:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sched-match-vs{font-size:0.9rem;color:var(--muted);padding:0 8px;flex-shrink:0;}
+  .sched-empty{color:var(--muted);font-style:italic;font-size:1.1rem;padding:14px 0;}
+
+  /* WAITING SCREEN */
+  .waiting{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;position:relative;z-index:1;}
+  .waiting[hidden]{display:none;}
+  .waiting-icon{font-size:3rem;}
+  .waiting-title{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1.8rem;letter-spacing:0.12em;color:var(--muted);}
+  .waiting-sub{font-size:0.7rem;color:var(--muted);letter-spacing:0.2em;font-family:'DM Sans',sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="tv-header">
+  <div class="logo">TARGET</div>
+  <div class="tv-tournament-name" id="tvTournamentName"></div>
+  <div class="tv-scene-badge">
+    <span class="live-dot" id="liveDot" style="background:var(--muted);box-shadow:none"></span>
+    <span id="tvSceneName">—</span>
+  </div>
+</div>
+
+<main>
+  <!-- WAITING — kad nema aktivnog turnira -->
+  <div class="waiting" id="waitingScreen">
+    <div class="waiting-icon">🎯</div>
+    <div class="waiting-title">ČEKANJE</div>
+    <div class="waiting-sub">Izaberi turnir u Scene Controlleru</div>
+  </div>
+
+  <!-- SCENE: WINNERS 1 -->
+  <div class="scene" id="sceneWinners1" hidden>
+    <div class="fit"><div class="blabel" id="wLabel1">ŽREB 1</div><div class="rounds" id="wRoundsTop"></div></div>
+  </div>
+
+  <!-- SCENE: WINNERS 2 (samo 32 igrača) -->
+  <div class="scene" id="sceneWinners2" hidden>
+    <div class="fit"><div class="blabel">ŽREB 2</div><div class="rounds" id="wRoundsBottom"></div></div>
+  </div>
+
+  <!-- SCENE: LOSERS -->
+  <div class="scene" id="sceneLosers" hidden>
+    <div class="fit"><div class="blabel lb">REPASAŽ</div><div class="rounds" id="lRounds"></div></div>
+  </div>
+
+  <!-- SCENE: SCHEDULE -->
+  <div class="scene" id="sceneSchedule" hidden>
+    <div class="fit full sched-wrap" id="scheduleArea"></div>
+  </div>
+
+  <!-- SCENE: FINALE -->
+  <div class="scene" id="sceneFinale" data-maxzoom="2" hidden>
+    <div class="fit"><div class="blabel gfl">🏆 FINALE</div><div id="gfArea"></div></div>
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
+if (!window._sb) window._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window._sb;
+
+let db = [];
+let activeTid = null;
+let sceneState = null;      // poslednji red iz scene_state
+let sceneChangedAt = 0;     // lokalno vreme kad je scena poslednji put promenjena (za auto-rotaciju)
+let advancing = false;
+
+const ALL_SCENE_IDS = ['sceneWinners1','sceneWinners2','sceneLosers','sceneSchedule','sceneFinale'];
+const SCENE_MAP = {
+  'winners-1': { el:'sceneWinners1', name:'ŽREB 1' },
+  'winners-2': { el:'sceneWinners2', name:'ŽREB 2' },
+  'losers':    { el:'sceneLosers',   name:'REPASAŽ' },
+  'schedule':  { el:'sceneSchedule', name:'RASPORED' },
+  'finale':    { el:'sceneFinale',   name:'FINALE' },
+};
+
+// ─── INIT ────────────────────────────────────────────────────
+async function init() {
+  const { data } = await sb.from('tournaments').select('*');
+  db = (data || []).filter(t => Array.isArray(t.seed) && t.seed.length);
+
+  subscribeRealtime();
+  subscribeScene();
+  await loadSceneState();
+
+  window.addEventListener('resize', refit);
+  if (document.fonts?.ready) document.fonts.ready.then(refit);
+  setInterval(autoRotateTick, 1000);
+}
+
+// ─── SCENE STATE ─────────────────────────────────────────────
+async function loadSceneState() {
+  const { data } = await sb.from('scene_state').select('*').eq('id',1).single();
+  if (data) applySceneState(data);
+}
+
+function subscribeScene() {
+  sb.channel('scene_tv')
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'scene_state' },
+      p => applySceneState(p.new))
+    .subscribe();
+}
+
+function applySceneState(state) {
+  const sceneChanged = !sceneState || sceneState.scene !== state.scene || sceneState.tournament_id !== state.tournament_id;
+  sceneState = state;
+  if (sceneChanged) sceneChangedAt = Date.now();
+
+  if (state.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+
+  const t = state.tournament_id && db.find(t => t.id === state.tournament_id);
+  if (!t) { showWaiting(); return; }
+
+  if (activeTid !== t.id) {
+    activeTid = t.id;
+    replayAll(t);
+    renderAllBrackets(t);
+  }
+  showScene(state.scene, t);
+}
+
+function showWaiting() {
+  activeTid = null;
+  document.getElementById('waitingScreen').hidden = false;
+  ALL_SCENE_IDS.forEach(id => document.getElementById(id).hidden = true);
+  document.getElementById('tvTournamentName').textContent = '';
+  document.getElementById('tvSceneName').textContent = '—';
+  const dot = document.getElementById('liveDot');
+  dot.style.background = 'var(--muted)'; dot.style.boxShadow = 'none';
+}
+
+// Vraća scenu koja se stvarno prikazuje (winners-2 postoji samo za 32 igrača)
+function resolveScene(scene, t) {
+  const s = normalizeScene(scene);
+  if (s === 'winners-2' && nextPow2(t.seed.length) !== 32) return 'winners-1';
+  return SCENE_MAP[s] ? s : 'winners-1';
+}
+
+function showScene(scene, t) {
+  document.getElementById('waitingScreen').hidden = true;
+  ALL_SCENE_IDS.forEach(id => document.getElementById(id).hidden = true);
+  const resolved = resolveScene(scene, t), info = SCENE_MAP[resolved];
+  const is32 = nextPow2(t.seed.length) === 32;
+  document.getElementById(info.el).hidden = false;
+  document.getElementById('tvTournamentName').textContent = t.name;
+  document.getElementById('tvSceneName').textContent = (resolved === 'winners-1' && !is32) ? 'GLAVNI ŽREB' : info.name;
+  const dot = document.getElementById('liveDot');
+  dot.style.background = 'var(--accent)'; dot.style.boxShadow = '0 0 6px var(--accent)';
+  refit();
+}
+
+// ─── FIT NA EKRAN ────────────────────────────────────────────
+// Skalira vidljivu scenu tako da cela stane ispod headera — i po visini i po
+// širini. Manji bracketi se uvećavaju (do MAX_ZOOM) da budu čitljivi sa daljine.
+const MAX_ZOOM = 1.35;
+function refit() {
+  requestAnimationFrame(() => {
+    const scene = ALL_SCENE_IDS.map(id => document.getElementById(id)).find(el => !el.hidden);
+    const fit = scene?.querySelector('.fit');
+    if (!fit) return;
+    fit.style.zoom = '';
+    const availH = scene.clientHeight, availW = scene.clientWidth;
+    const cap = fit.classList.contains('full') ? 1 : parseFloat(scene.dataset.maxzoom) || MAX_ZOOM;
+    const z = Math.min(cap, availH / fit.scrollHeight, availW / fit.scrollWidth);
+    fit.style.zoom = z.toFixed(3);
+  });
+}
+
+// ─── AUTO-ROTACIJA (radi na TV-u, ne na telefonu) ────────────
+// Telefon može da se zaključa; TV je uvek upaljen. Uslov .eq('scene', …) je
+// compare-and-swap: ako je više TV-ova otvoreno, samo prvi uspe.
+function autoRotateTick() {
+  if (!sceneState?.auto_rotate || !activeTid || advancing) return;
+  if (Date.now() - sceneChangedAt < AUTO_INTERVAL * 1000) return;
+  advanceScene();
+}
+async function advanceScene() {
+  const t = db.find(t => t.id === activeTid); if (!t) return;
+  const pool = autoScenesFor(nextPow2(t.seed.length));
+  const cur = normalizeScene(sceneState.scene);
+  const next = pool[(pool.indexOf(cur) + 1) % pool.length];
+  advancing = true;
+  try {
+    const { data } = await sb.from('scene_state')
+      .update({ scene: next, updated_at: new Date().toISOString() })
+      .eq('id', 1).eq('scene', sceneState.scene).eq('auto_rotate', true).select();
+    if (data?.length) applySceneState(data[0]);
+    else await loadSceneState();
+  } catch (e) { console.error(e); }
+  finally { advancing = false; sceneChangedAt = Date.now(); }
+}
+
+// ─── REALTIME TOURNAMENT UPDATES ────────────────────────────
+function subscribeRealtime() {
+  sb.channel('tournaments_tv')
+    .on('postgres_changes', { event:'*', schema:'public', table:'tournaments' }, payload => {
+      if (payload.eventType === 'DELETE') {
+        db = db.filter(t => t.id !== payload.old?.id);
+        if (activeTid === payload.old?.id) showWaiting();
+        return;
+      }
+      const updated = payload.new;
+      if (!updated?.id || !Array.isArray(updated.seed)) return;
+      const idx = db.findIndex(t => t.id === updated.id);
+      if (idx !== -1) db[idx] = updated; else db.push(updated);
+      if (activeTid === updated.id) {
+        replayAll(updated);
+        renderAllBrackets(updated);
+        showScene(sceneState?.scene, updated);
+      } else if (sceneState?.tournament_id === updated.id) {
+        applySceneState(sceneState);   // turnir je stigao posle scene_state-a
+      }
+    })
+    .subscribe();
+}
+
+// ─── RENDER (bez onclick, čisto prikaz) ──────────────────────
+const MATCH_H = 62, GAP = 33, UNIT = MATCH_H + GAP;
+
+// Kolona jednog kola: razmak između mečeva se duplira po kolu, prvi meč je
+// pomeren za pola razmaka da bude centriran između dva meča prethodnog kola.
+function roundCol(title, matches, depth, color) {
+  const rd = document.createElement('div'); rd.className = 'round-col';
+  const tt = document.createElement('div'); tt.className = 'round-title'; tt.textContent = title;
+  if (color) tt.style.color = color;
+  rd.appendChild(tt);
+  let spacing = UNIT;
+  for (let i = 1; i < depth; i++) spacing = spacing * 2 + UNIT;
+  const topPad = depth === 0 ? 0 : spacing / 2;
+  matches.forEach((m, mi) => {
+    const el = mEl(m);
+    el.style.marginBottom = `${GAP}px`;
+    if (depth > 0) el.style.marginTop = mi === 0 ? `${topPad}px` : `${spacing}px`;
+    rd.appendChild(el);
+  });
+  return rd;
+}
+
+function renderWInto(containerId, t, half) {
+  const cont = document.getElementById(containerId); cont.innerHTML = '';
+  const wRounds = t.wB.slice(0, -1);   // finale se prikazuje u sceni FINALE
+  wRounds.forEach((round, ri) => {
+    const matches = half === 'top' ? round.slice(0, Math.ceil(round.length / 2))
+                  : half === 'bottom' ? round.slice(Math.floor(round.length / 2))
+                  : round;
+    if (!matches.length) return;
+    cont.appendChild(roundCol(wRoundName(t, ri), matches, ri));
+  });
+}
+
+function renderW(t) {
+  const is32 = nextPow2(t.seed.length) === 32;
+  document.getElementById('wLabel1').textContent = is32 ? 'ŽREB 1' : 'GLAVNI ŽREB';
+  renderWInto('wRoundsTop', t, is32 ? 'top' : 'all');
+  renderWInto('wRoundsBottom', t, is32 ? 'bottom' : 'none');
+}
+
+function renderL(t) {
+  const cont = document.getElementById('lRounds'); cont.innerHTML = '';
+  const lRounds = t.lB.slice(0, -1);   // finale repasaža je u sceni FINALE
+  // razmak raste samo na reduce kolima (parni indeksi); feed kola prate prethodno
+  lRounds.forEach((round, ri) => cont.appendChild(roundCol(lRoundName(t, ri), round, Math.floor(ri / 2), 'var(--accent2)')));
+}
+
+function renderAllBrackets(t) {
+  renderW(t);
+  renderL(t);
+  renderGF(t);
+  renderSchedule(t);
+}
+
+function renderSchedule(t) {
+  const area = document.getElementById('scheduleArea');
+  area.innerHTML = '';
+  const { playing, next } = getScheduleQueue(t);
+
+  function box(title, color, matches) {
+    const d = document.createElement('div'); d.className = 'sched-box';
+    const h = document.createElement('div'); h.className = 'sched-box-title';
+    h.style.color = color; h.textContent = title; d.appendChild(h);
+    if (!matches.length) {
+      const e = document.createElement('div'); e.className = 'sched-empty'; e.textContent = '—'; d.appendChild(e);
+    } else {
+      matches.forEach(m => {
+        const r = document.createElement('div'); r.className = 'sched-match';
+        r.innerHTML = `<span class="sched-match-id">${m.id}</span><span class="sched-match-p">${esc(m.p1)}</span><span class="sched-match-vs">VS</span><span class="sched-match-p">${esc(m.p2)}</span>`;
+        d.appendChild(r);
+      });
+    }
+    return d;
+  }
+
+  area.appendChild(box('TRENUTNO SE IGRA', 'var(--accent)', playing));
+  area.appendChild(box('SLEDEĆI NA REDU', 'var(--muted)', next));
+}
+
+function renderGF(t) {
+  const area = document.getElementById('gfArea'); area.innerHTML = '';
+  const lbl = (text, color) => { const d = document.createElement('div'); d.className = 'gf-lbl'; d.style.color = color; d.textContent = text; return d; };
+  const block = (...els) => { const d = document.createElement('div'); els.forEach(e => d.appendChild(e)); return d; };
+
+  const grid = document.createElement('div'); grid.className = 'gf-grid';
+  const left = document.createElement('div'); left.className = 'gf-col';
+  const right = document.createElement('div'); right.className = 'gf-col';
+
+  const wFinal = t.wB[t.wB.length - 1]?.[0];
+  if (wFinal) left.appendChild(block(lbl('FINALE W', 'var(--accent)'), mEl(wFinal)));
+  const lFinal = t.lB[t.lB.length - 1]?.[0];
+  if (lFinal) left.appendChild(block(lbl('FINALE REPASAŽA', 'var(--accent2)'), mEl(lFinal)));
+
+  right.appendChild(block(lbl('GRAND FINAL', 'var(--gold)'), mEl(t.gf, true)));
+  if (t.gf.done) {
+    if (t.gf.winner === t.gf.p1) right.appendChild(champEl(t.gf.winner));
+    else {
+      const note = document.createElement('div'); note.className = 'gf-note';
+      note.innerHTML = '⚡ <strong style="color:var(--accent2)">EGAL</strong> — pobednik repasaža mora pobediti dva puta.';
+      right.appendChild(note);
+      right.appendChild(block(lbl('ODLUČUJUĆI MEČ', 'var(--accent2)'), mEl(t.gfr, true)));
+      if (t.gfr.done) right.appendChild(champEl(t.gfr.winner));
+    }
+  }
+  grid.appendChild(left); grid.appendChild(right);
+  area.appendChild(grid);
+}
+
+function mEl(m, isGF = false) {
+  const d = document.createElement('div');
+  d.className = 'match-card' + (isGF ? ' gfc' : '');
+  d.innerHTML = `<div class="mid">${m.id}</div>${pRow(m, 1)}${pRow(m, 2)}`;
+  return d;
+}
+function pRow(m, n) {
+  const raw = m[`p${n}`], score = m[`s${n}`];
+  const name = raw === BYE ? 'BYE' : raw;
+  const isW = m.done && raw && m.winner === raw, isL = m.done && raw && m.loser === raw;
+  const cls = !raw ? 'tbd' : isW ? 'win' : isL ? 'lose' : '';
+  return `<div class="mp ${cls}"><span class="mp-name">${esc(name || 'TBD')}</span><span class="mp-score">${m.done && score != null ? score : ''}</span></div>`;
+}
+function champEl(name) { const d = document.createElement('div'); d.className = 'champ-box'; d.innerHTML = `<div class="champ-lbl">🏆 POBEDNIK TURNIRA</div><div class="champ-name">${esc(name)}</div>`; return d; }
+function esc(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+init();
+</script>
+</body>
+</html>
