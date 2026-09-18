@@ -30,14 +30,12 @@
   .section-label{font-size:0.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
 
   /* TOURNAMENT LIST */
-  .t-list{display:flex;flex-direction:column;gap:6px;}
-  .t-item{background:var(--card);border:1px solid var(--border);padding:12px 14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;}
-  .t-item:hover{border-color:var(--accent);}
-  .t-item.active{border-color:var(--accent);background:rgba(43,96,232,0.06);}
-  .t-item-name{font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:2px;}
-  .t-item-meta{font-size:0.62rem;color:var(--muted);margin-top:2px;}
-  .t-item-check{color:var(--accent);font-size:1.1rem;opacity:0;flex-shrink:0;}
-  .t-item.active .t-item-check{opacity:1;}
+  .t-select-wrap{position:relative;}
+  .t-select{width:100%;appearance:none;-webkit-appearance:none;background:var(--card);border:1px solid var(--border);color:var(--text);padding:13px 40px 13px 14px;font-family:'Stardos Stencil',serif;font-weight:700;font-size:1rem;letter-spacing:2px;cursor:pointer;outline:none;transition:border-color 0.2s;}
+  .t-select:focus{border-color:var(--accent);}
+  .t-select.active{border-color:var(--accent);}
+  .t-select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:0.9rem;}
+  .t-meta{font-size:0.62rem;color:var(--muted);margin-top:6px;min-height:1em;}
   .no-t{font-size:0.72rem;color:var(--muted);padding:14px;text-align:center;border:1px dashed var(--border);}
 
   /* SCENE CONTROL */
@@ -151,7 +149,8 @@
 <!-- TURNIRI -->
 <div class="section">
   <div class="section-label">AKTIVAN TURNIR</div>
-  <div class="t-list" id="tList"><div class="no-t">Učitavanje...</div></div>
+  <div class="t-select-wrap"><select class="t-select" id="tSelect" onchange="selectTournament(this.value)"><option value="">Učitavanje...</option></select></div>
+  <div class="t-meta" id="tMeta"></div>
   <div style="margin-top:8px">
     <button class="act-btn primary" onclick="openNewModal()" style="width:100%">+ NOVI TURNIR</button>
   </div>
@@ -334,22 +333,21 @@ function renderAll() {
 
 // ─── TOURNAMENTS ─────────────────────────────────────────────
 function renderTournaments() {
-  const list = document.getElementById('tList');
-  if (!db.length) { list.innerHTML = '<div class="no-t">Nema turnira u bazi</div>'; return; }
-  list.innerHTML = db.map(t => {
+  const sel = document.getElementById('tSelect'), meta = document.getElementById('tMeta');
+  if (!db.length) { sel.innerHTML = '<option value="">Nema turnira u bazi</option>'; sel.classList.remove('active'); meta.textContent = ''; return; }
+  const cur = sceneState.tournament_id;
+  sel.innerHTML = '<option value="">— Izaberi turnir —</option>' + db.map(t => {
     replayAll(t);
     const ch = getChamp(t);
-    return `<div class="t-item ${sceneState.tournament_id===t.id?'active':''}" onclick="selectTournament('${t.id}')">
-      <div>
-        <div class="t-item-name">${esc(t.name)}</div>
-        <div class="t-item-meta">${esc(t.date||'—')} · ${t.players.length} igrača${ch?' · 🏆 '+esc(ch):''}</div>
-      </div>
-      <span class="t-item-check">✓</span>
-    </div>`;
+    return `<option value="${t.id}" ${cur===t.id?'selected':''}>${esc(t.name)}${ch?' 🏆':''}</option>`;
   }).join('');
+  sel.classList.toggle('active', !!cur);
+  const t = db.find(t => t.id === cur);
+  meta.textContent = t ? `${t.date||'—'} · ${t.players.length} igrača · ${t.num_boards||2} table${getChamp(t)?' · 🏆 '+getChamp(t):''}` : '';
 }
 
 async function selectTournament(id) {
+  if (!id) { renderTournaments(); return; }
   activeTid = id;
   sceneState.tournament_id = id;
   const t = getT();
