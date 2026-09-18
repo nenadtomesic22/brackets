@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/brackets_app/index.html" },
+    { "source": "/:path*", "destination": "/brackets_app/:path*" }
+  ]
+}
