@@ -196,7 +196,7 @@
 
 <!-- RASPORED -->
 <div class="section">
-  <div class="section-label">RASPORED</div>
+  <div class="section-label">RASPORED <span style="letter-spacing:0;text-transform:none;opacity:0.7">· dodirni meč za unos rezultata</span></div>
   <div id="scheduleCtrl"><div class="no-t">Izaberi turnir</div></div>
 </div>
 
@@ -597,9 +597,10 @@ function renderScheduleCtrl() {
   const row=(m)=>{
     const isPost = postponed.includes(m);
     const btn = isPost
-      ? `<button class="act-btn mr-btn" onclick="unpostponeMatch('${m.id}')">VRATI</button>`
-      : playing.includes(m) ? `<button class="act-btn mr-btn" onclick="postponeMatch('${m.id}')">ODLOŽI</button>` : '';
-    return `<div class="match-row ${isPlayable(m)?'':'pending'}" style="cursor:default">
+      ? `<button class="act-btn mr-btn" onclick="event.stopPropagation();unpostponeMatch('${m.id}')">VRATI</button>`
+      : playing.includes(m) ? `<button class="act-btn mr-btn" onclick="event.stopPropagation();postponeMatch('${m.id}')">ODLOŽI</button>` : '';
+    const canScore = isPlayable(m);
+    return `<div class="match-row ${canScore?'':'pending'}" ${canScore?`onclick="openScoreModal('${m.id}')" title="Unesi rezultat"`:'style="cursor:default"'}>
       <span class="mr-id"><b>${m.num}</b>${m.id}</span>
       <span class="mr-players">${slot(m,1)}<span class="mr-vs">vs</span>${slot(m,2)}${isPost?' <span class="mr-vs">(odloženo)</span>':''}</span>
       ${btn}
