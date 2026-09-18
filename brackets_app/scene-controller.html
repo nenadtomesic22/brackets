@@ -78,10 +78,13 @@
   .match-row:hover{border-color:var(--accent);}
   .match-row.played{border-color:rgba(43,96,232,0.2);}
   .match-row.bye-row{opacity:0.4;cursor:default;}
+  .match-row.pending{opacity:0.7;}
   .mr-id{font-size:0.58rem;color:var(--muted);min-width:64px;font-family:'DM Mono',monospace;}
   .mr-id b{color:var(--text);font-size:0.8rem;font-weight:500;display:block;}
   .mr-players{flex:1;font-size:0.75rem;}
   .mr-vs{color:var(--muted);font-size:0.62rem;margin:0 4px;}
+  .mr-wait{color:var(--muted);font-style:italic;font-size:0.68rem;}
+  .mr-players{overflow-wrap:anywhere;}
   .mr-btn{padding:3px 8px;font-size:0.55rem;flex:0;min-width:0;white-space:nowrap;}
   .mr-score{font-family:'Stardos Stencil',serif;font-weight:700;font-size:0.9rem;color:var(--accent);min-width:40px;text-align:right;}
   .match-tabs{display:flex;gap:0;margin-bottom:8px;}
@@ -286,7 +289,7 @@ const SUPABASE_URL = 'https://mvsozhihhrlwdsvfynxw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12c296aGloaHJsd2RzdmZ5bnh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzA5MzAsImV4cCI6MjA5MDcwNjkzMH0.F2Y9EiCQHZiIdc-cDTICZI-efFnwlmmEFVc_H5NqT04';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SCENE_NAMES = { 'winners-1':'ŽREB 1', 'winners-2':'ŽREB 2', losers:'REPASAŽ', schedule:'RASPORED', finale:'FINALE' };
+const SCENE_NAMES = { 'winners-1':'ŽREB 1', 'winners-2':'ŽREB 2', losers:'REPASAŽ', schedule:'RASPORED', finale:'FINALE', champion:'POBEDNIK' };
 
 let db = [];
 let sceneState = { tournament_id: null, scene: 'winners-1', auto_rotate: false };
@@ -362,8 +365,8 @@ function updateSceneButtons(t) {
   const btn = (scene, icon, label, extra='') => `<button class="scene-btn" data-scene="${scene}" onclick="setScene('${scene}')" ${extra}><span class="scene-icon">${icon}</span>${label}</button>`;
   container.style.gridTemplateColumns = '1fr 1fr';
   container.innerHTML = is32
-    ? btn('winners-1','🏆','ŽREB 1') + btn('winners-2','🏆','ŽREB 2') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE','style="grid-column:span 2"')
-    : btn('winners-1','🏆','GLAVNI ŽREB') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE');
+    ? btn('winners-1','🏆','ŽREB 1') + btn('winners-2','🏆','ŽREB 2') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE') + btn('champion','👑','POBEDNIK')
+    : btn('winners-1','🏆','GLAVNI ŽREB') + btn('losers','⚔️','REPASAŽ') + btn('schedule','📋','RASPORED') + btn('finale','🥇','FINALE') + btn('champion','👑','POBEDNIK','style="grid-column:span 2"');
 }
 
 // ─── SCENE ───────────────────────────────────────────────────
@@ -456,8 +459,8 @@ function renderMatchList() {
   list.innerHTML = matches.map(m => {
     const isBye = m.p1 === BYE || m.p2 === BYE;
     const clickable = isPlayable(m);
-    const p1 = m.p1 === BYE ? 'BYE' : (m.p1 || 'TBD');
-    const p2 = m.p2 === BYE ? 'BYE' : (m.p2 || 'TBD');
+    const lbl = s => { const d = describeSlot(t, m, s); return d.pending ? (d.num ? `${d.win?'pob.':'por.'} ${d.num}` : 'TBD') : d.name; };
+    const p1 = lbl(1), p2 = lbl(2);
     const score = m.done && !isBye ? `${m.s1}:${m.s2}` : '';
     return `<div class="match-row ${m.done&&!isBye?'played':''} ${!clickable?'bye-row':''}"
       onclick="${clickable?'openScoreModal(\''+m.id+'\')':''}"
@@ -587,14 +590,20 @@ function renderScheduleCtrl() {
   if (!t){el.innerHTML='<div class="no-t" style="padding:10px">Izaberi turnir</div>';return;}
   replayAll(t);
   const {playing,next,postponed}=getScheduleQueue(t);
+  const slot=(m,s)=>{
+    const d=describeSlot(t,m,s);
+    if(!d.pending) return esc(d.name);
+    const who=d.p1||d.p2?`${esc(d.p1||'?')} / ${esc(d.p2||'?')}`:'TBD';
+    return `<span class="mr-wait">${d.num?`${d.kind.toLowerCase()} ${d.num}:`:''} ${who}</span>`;
+  };
   const row=(m)=>{
     const isPost = postponed.includes(m);
     const btn = isPost
       ? `<button class="act-btn mr-btn" onclick="unpostponeMatch('${m.id}')">VRATI</button>`
       : playing.includes(m) ? `<button class="act-btn mr-btn" onclick="postponeMatch('${m.id}')">ODLOŽI</button>` : '';
-    return `<div class="match-row">
+    return `<div class="match-row ${isPlayable(m)?'':'pending'}" style="cursor:default">
       <span class="mr-id"><b>${m.num}</b>${m.id}</span>
-      <span class="mr-players">${esc(m.p1)}<span class="mr-vs">vs</span>${esc(m.p2)}${isPost?' <span class="mr-vs">(odloženo)</span>':''}</span>
+      <span class="mr-players">${slot(m,1)}<span class="mr-vs">vs</span>${slot(m,2)}${isPost?' <span class="mr-vs">(odloženo)</span>':''}</span>
       ${btn}
     </div>`;
   };

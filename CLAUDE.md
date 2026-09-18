@@ -35,7 +35,9 @@ Web aplikacija za vođenje pikado turnira sa **double elimination** sistemom, na
   (smanjuje se koliko treba, uvećava do `MAX_ZOOM`=1.35, finale do `data-maxzoom="2"`); refit na resize i kad se učitaju fontovi
 - **Auto-rotacija radi na TV-u** (`autoRotateTick`): TV je uvek upaljen, telefon se zaključava.
   Menja scenu preko `scene_state` update-a sa `.eq('scene', trenutna)` (compare-and-swap, više TV-ova ne preskaču duplo)
-- Prikazuje 5 scena: `sceneWinners1`, `sceneWinners2`, `sceneLosers`, `sceneSchedule`, `sceneFinale`
+- Prikazuje 6 scena: `sceneWinners1`, `sceneWinners2`, `sceneLosers`, `sceneSchedule`, `sceneFinale`, `sceneChampion` (šampion + II/III mesto, `getPodium`)
+- Prelaz između scena: fade (`.scene.show`, 0.4s); scene su `position:absolute` u `main`
+- Prazan slot na kartici prikazuje odakle igrač stiže: `POB. 17 Stefan / Šone` ili `POR. 13` (`describeSlot`)
 
 ### scene-controller.html — Admin kontroler
 - Otvara se na telefonu/tabletu
@@ -76,7 +78,8 @@ Moguće vrednosti za `scene`:
 - `'winners-2'` → ŽREB 2 (donja polovina, samo za turnire od 32 igrača)
 - `'losers'` → REPASAŽ
 - `'schedule'` → RASPORED (koji mečevi se igraju/sledeći)
-- `'finale'` → FINALE + Grand Final + Champion
+- `'finale'` → FINALE + Grand Final
+- `'champion'` → POBEDNIK (šampion + podijum); nije u auto-rotaciji
 
 Stare vrednosti se normalizuju (`winners` → `winners-1`, `winners-early` → `winners-1`, itd.)
 
@@ -119,7 +122,9 @@ genBracket(t)         — generiše praznu strukturu bracketa
 buildRoutingTable(size), nextPow2(n), getChamp(t), allMatches(t), findM(t, id)
 makeSeed(players)     — shuffle + raspored BYE-eva
 wRoundName(t, ri) / lRoundName(t, ri) — nazivi kola po veličini (ČETVRTFINALE, POLUFINALE, FINALE…)
-getReadyMatches(t) / getScheduleQueue(t) — raspored
+getReadyMatches(t) / getUpcomingMatches(t) / getScheduleQueue(t) — raspored
+describeSlot(t, m, s) — {name} | {pending, num, kind, p1, p2}: odakle stiže igrač u prazan slot (m.from1/from2)
+getPodium(t)          — {first, second, third} ili null
 scenesFor(size) / autoScenesFor(size) / normalizeScene(s), AUTO_INTERVAL
 ```
 
@@ -158,6 +163,8 @@ Light tema: sve inverzno (`--bg: #F0EDE6`, `--text: #09090E`).
 - Logika u `getScheduleQueue(t)`: prvih N spremnih mečeva = IGRA SE, sledećih N = SLEDEĆI
 - Odloženi mečevi stoje na početku SLEDEĆI liste i **nikad sami ne ulaze u IGRA SE** — vraćaju se dugmetom VRATI
   (ili automatski kad se unese rezultat)
+- Ako nema dovoljno spremnih, SLEDEĆI se dopunjuje iz `getUpcomingMatches` — mečevi kojima se čeka protivnik,
+  prikazani kao "POBEDNIK MEČA 22 — Nataša / David vs Žeki"
 
 ## Landing page (brackets_landing/)
 Odvojen statički sajt. Fajlovi: `index.html`, `index.css`, `main.js`, `logo.svg`, `favicon.png`, `demo.png`. Prikazuje marketing stranicu za TARGET SaaS proizvod (u razvoju).

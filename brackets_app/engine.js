@@ -16,11 +16,11 @@ function normalizeScene(s) {
 // Redosled scena za dati broj igrača (zaokružen na stepen dvojke)
 function scenesFor(size) {
   return size === 32
-    ? ['winners-1', 'winners-2', 'losers', 'schedule', 'finale']
-    : ['winners-1', 'losers', 'schedule', 'finale'];
+    ? ['winners-1', 'winners-2', 'losers', 'schedule', 'finale', 'champion']
+    : ['winners-1', 'losers', 'schedule', 'finale', 'champion'];
 }
-// Auto-rotacija preskače finale
-function autoScenesFor(size) { return scenesFor(size).filter(s => s !== 'finale'); }
+// Auto-rotacija preskače finale i pobednika
+function autoScenesFor(size) { return scenesFor(size).filter(s => s !== 'finale' && s !== 'champion'); }
 
 // ─── SEED ─────────────────────────────────────────────────────
 // Raspoređuje BYE-eve tako da nikad dva BYE-a ne igraju jedan protiv drugog u 1. kolu.
@@ -94,7 +94,7 @@ function playOrder(t) {
 
 // ─── STRUKTURA ────────────────────────────────────────────────
 function mkM(id, p1 = null, p2 = null) {
-  return { id, num: 0, p1, p2, s1: null, s2: null, winner: null, loser: null, done: false, nextWin: null, nextLose: null };
+  return { id, num: 0, p1, p2, s1: null, s2: null, winner: null, loser: null, done: false, nextWin: null, nextLose: null, from1: null, from2: null };
 }
 function applyRoutes(m, routes) { const r = routes[m.id]; if (!r) return; m.nextWin = r.win || null; m.nextLose = r.lose || null; }
 
@@ -119,6 +119,24 @@ function genBracket(t) {
   t.gf = mkM('GF'); applyRoutes(t.gf, routes);
   t.gfr = mkM('GFR'); applyRoutes(t.gfr, routes);
   playOrder(t).forEach((m, i) => { m.num = i + 1; });
+  // Odakle stiže igrač u svaki slot (za "čeka pobednika meča 17" na ekranu)
+  for (const m of allMatches(t)) {
+    for (const [ref, win] of [[m.nextWin, true], [m.nextLose, false]]) {
+      const tm = getMatchByRef(t, ref); if (!tm) continue;
+      tm[`from${ref.s}`] = { id: m.id, num: m.num, win };
+    }
+  }
+}
+
+// Opis slota za prikaz: poznat igrač, BYE, ili "pobednik/poraženi meča N (A / B)"
+function describeSlot(t, m, s) {
+  const p = m[`p${s}`];
+  if (p === BYE) return { name: 'BYE', bye: true };
+  if (p) return { name: p };
+  const src = m[`from${s}`]; if (!src) return { name: 'TBD', pending: true };
+  const sm = findM(t, src.id);
+  return { pending: true, num: src.num, win: src.win, kind: src.win ? 'POBEDNIK' : 'PORAŽENI',
+           p1: sm?.p1 === BYE ? null : sm?.p1, p2: sm?.p2 === BYE ? null : sm?.p2 };
 }
 
 // ─── REPLAY ───────────────────────────────────────────────────
@@ -180,6 +198,14 @@ function getChamp(t) {
   if (t.gf.winner === t.gf.p1) return t.gf.winner;
   return t.gfr && t.gfr.done ? t.gfr.winner : null;
 }
+// 1. 2. 3. mesto — 2. je poraženi finala, 3. je poraženi finala repasaža
+function getPodium(t) {
+  const first = getChamp(t); if (!first) return null;
+  const second = t.gfr?.done ? t.gfr.loser : t.gf.loser;
+  const lFinal = t.lB[t.lB.length - 1]?.[0];
+  const third = lFinal?.done && lFinal.loser !== BYE ? lFinal.loser : null;
+  return { first, second, third };
+}
 
 // ─── NAZIVI KOLA ──────────────────────────────────────────────
 function wRoundName(t, ri) {
@@ -194,11 +220,24 @@ function lRoundName(t, ri) { return ri === t.lB.length - 1 ? 'FINALE REPASAŽA' 
 // ─── RASPORED ─────────────────────────────────────────────────
 // Spremni mečevi po broju meča (= redosled igranja sa listića)
 function getReadyMatches(t) { return allMatches(t).filter(m => !m.done && isPlayable(m)).sort((a, b) => a.num - b.num); }
+// Mečevi koji još nisu spremni ali se zna ko ih čeka: bar jedan igrač poznat,
+// ili je izvorni meč već u toku. Po broju meča.
+function getUpcomingMatches(t) {
+  return allMatches(t).filter(m => {
+    if (m.done || isPlayable(m) || m.p1 === BYE || m.p2 === BYE) return false;
+    if (m.p1 || m.p2) return true;
+    return [m.from1, m.from2].some(f => { const sm = f && findM(t, f.id); return sm && isPlayable(sm) && !sm.done; });
+  }).sort((a, b) => a.num - b.num);
+}
 // Prvih N spremnih = IGRA SE, sledećih N = SLEDEĆI. Odloženi mečevi nikad ne
 // ulaze u IGRA SE sami od sebe — stoje na početku SLEDEĆI dok se ne vrate.
+// Ako nema dovoljno spremnih, SLEDEĆI se dopunjuje mečevima koji čekaju protivnika.
 function getScheduleQueue(t) {
   const n = t.num_boards || 2, ready = getReadyMatches(t);
   const postponed = (t.postponed || []).map(id => ready.find(m => m.id === id)).filter(Boolean);
   const normal = ready.filter(m => !postponed.includes(m));
-  return { playing: normal.slice(0, n), next: [...postponed, ...normal.slice(n)].slice(0, n), postponed };
+  const playing = normal.slice(0, n);
+  const next = [...postponed, ...normal.slice(n)].slice(0, n);
+  for (const m of getUpcomingMatches(t)) { if (next.length >= n) break; next.push(m); }
+  return { playing, next, postponed };
 }
